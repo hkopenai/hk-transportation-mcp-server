@@ -7,6 +7,13 @@ This is an MCP server that provides access to transportation related data in Hon
 
 ## Features
 
+- Get daily passenger traffic statistics at Hong Kong control points
+- Filter data by date ranges
+- Breakdown statistics by visitor types (Hong Kong Residents, Mainland Visitors, Other Visitors)
+
+## Data Source
+
+- Passenger traffic data from Hong Kong Immigration Department
 
 ## Examples
 
@@ -56,4 +63,3 @@ Tests are available in the `tests/` directory. Run with:
 ```bash
 pytest
 ```
-
