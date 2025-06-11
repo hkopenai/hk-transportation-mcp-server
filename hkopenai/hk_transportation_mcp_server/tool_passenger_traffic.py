@@ -23,7 +23,7 @@ def fetch_passenger_traffic_data(
     """
     url = "https://www.immd.gov.hk/opendata/eng/transport/immigration_clearance/statistics_on_daily_passenger_traffic.csv"
     response = urllib.request.urlopen(url)
-    lines = [l.decode('utf-8') for l in response.readlines()]
+    lines = [l.decode('utf-8-sig') for l in response.readlines()]  # Use utf-8-sig to handle BOM
     reader = csv.DictReader(lines)
     
     # Get last 7 days if no dates specified (including today)
@@ -34,9 +34,11 @@ def fetch_passenger_traffic_data(
     # Read all data first
     all_data = []
     for row in reader:
-        # if 'Date' not in row:
-        #     continue
-        current_date = row['Date']
+        # Handle both 'Date' and '\ufeffDate' from BOM
+        date_key = 'Date' if 'Date' in row else '\ufeffDate'
+        if date_key not in row:
+            continue
+        current_date = row[date_key]
         current_dt = datetime.strptime(current_date, '%d-%m-%Y')
         all_data.append({
             'dt': current_dt,

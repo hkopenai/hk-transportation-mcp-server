@@ -4,7 +4,7 @@ from hkopenai.hk_transportation_mcp_server.tool_passenger_traffic import fetch_p
 from datetime import datetime, timedelta
 
 class TestPassengerTraffic(unittest.TestCase):
-    CSV_DATA = """Date,Control Point,Arrival / Departure,Hong Kong Residents,Mainland Visitors,Other Visitors,Total
+    CSV_DATA = """\ufeffDate,Control Point,Arrival / Departure,Hong Kong Residents,Mainland Visitors,Other Visitors,Total
 01-01-2021,Airport,Arrival,341,0,9,350
 01-01-2021,Airport,Departure,803,17,28,848
 02-01-2021,Airport,Arrival,363,10,10,383
