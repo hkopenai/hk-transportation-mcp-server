@@ -10,7 +10,7 @@ This is an MCP server that provides access to transportation related data in Hon
 
 ## Examples
 
-* 
+* How many hong kong arrival yesterday through high speed railway.
 
 ## Data Source
 

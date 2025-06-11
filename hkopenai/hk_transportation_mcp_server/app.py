@@ -1,23 +1,12 @@
 import argparse
 from fastmcp import FastMCP
-from hkopenai.hk_transportation_mcp_server import tool_business_reg, tool_passenger_traffic
+from hkopenai.hk_transportation_mcp_server import tool_passenger_traffic
 from typing import Dict, Annotated, Optional
 from pydantic import Field
 
 def create_mcp_server():
     """Create and configure the MCP server"""
     mcp = FastMCP(name="HK OpenAI transportation Server")
-
-    @mcp.tool(
-        description="Get monthly statistics on the number of new business registrations in Hong Kong"
-    )
-    def get_business_stats(
-        start_year: Annotated[Optional[int], Field(description="Start Year")] = None,
-        start_month: Annotated[Optional[int], Field(description="Start Month")] = None,
-        end_year: Annotated[Optional[int], Field(description="End Year")] = None,
-        end_month: Annotated[Optional[int], Field(description="End Month")] = None
-    ) -> Dict:
-        return tool_business_reg.get_business_stats(start_year, start_month, end_year, end_month)
 
     @mcp.tool(
         description="The statistics on daily passenger traffic provides figures concerning daily statistics on inbound and outbound passenger trips at all control points since 2021 (with breakdown by Hong Kong Residents, Mainland Visitors and Other Visitors). Return last 7 days data if no date range is specified."
