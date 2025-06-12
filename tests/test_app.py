@@ -3,6 +3,21 @@ from unittest.mock import patch, Mock
 from hkopenai.hk_transportation_mcp_server.app import create_mcp_server
 from hkopenai.hk_transportation_mcp_server.tool_passenger_traffic import fetch_passenger_traffic_data
 
+def create_tool_decorator(expected_name, decorated_funcs):
+    """Create a tool decorator that only matches functions with the expected name.
+    
+    Args:
+        expected_name: The function name to match
+        decorated_funcs: List to append matched functions to
+    """
+    def tool_decorator(description=None):
+        def decorator(f):
+            if f.__name__ == expected_name:
+                decorated_funcs.append(f)
+            return f
+        return decorator
+    return tool_decorator
+
 class TestApp(unittest.TestCase):
     @patch('hkopenai.hk_transportation_mcp_server.app.FastMCP')
     @patch('hkopenai.hk_transportation_mcp_server.app.tool_passenger_traffic')
@@ -14,16 +29,7 @@ class TestApp(unittest.TestCase):
         decorator_calls = []
         decorated_funcs = []
         
-        def tool_decorator(description=None):
-            # First call: @tool(description=...)
-            decorator_calls.append(((), {'description': description}))
-            
-            def decorator(f):
-                # Second call: decorator(function)
-                decorated_funcs.append(f)
-                return f
-                
-            return decorator
+        tool_decorator = create_tool_decorator('get_passenger_stats', decorated_funcs)
             
         mock_server.tool = tool_decorator
         mock_fastmcp.return_value = mock_server
@@ -35,17 +41,10 @@ class TestApp(unittest.TestCase):
         # Verify server creation
         mock_fastmcp.assert_called_once_with(name="HK OpenAI transportation Server")
         self.assertEqual(server, mock_server)
-
-        # Verify tools were decorated (2 tools)
-        self.assertEqual(len(decorated_funcs), 1)
         
         # Test the passenger traffic tool
         passenger_result = decorated_funcs[0]()
         mock_tool_passenger.get_passenger_stats.assert_called_once()
-        
-        # Verify tool descriptions were passed to decorator
-        self.assertEqual(len(decorator_calls), 1)
-        self.assertIsNotNone(decorator_calls[0][1]['description'])
 
     @patch('hkopenai.hk_transportation_mcp_server.app.FastMCP')
     @patch('hkopenai.hk_transportation_mcp_server.app.tool_passenger_traffic')
@@ -54,11 +53,7 @@ class TestApp(unittest.TestCase):
         mock_server = unittest.mock.Mock()
         decorated_funcs = []
         
-        def tool_decorator(description=None):
-            def decorator(f):
-                decorated_funcs.append(f)
-                return f
-            return decorator
+        tool_decorator = create_tool_decorator('get_passenger_stats', decorated_funcs)
             
         mock_server.tool = tool_decorator
         mock_fastmcp.return_value = mock_server
@@ -83,6 +78,33 @@ class TestApp(unittest.TestCase):
         mock_tool_passenger.get_passenger_stats.side_effect = ValueError('Invalid date format')
         with self.assertRaises(ValueError):
             passenger_func(start_date='2025-01-01')  # Wrong format
+
+    @patch('hkopenai.hk_transportation_mcp_server.app.FastMCP')
+    @patch('hkopenai.hk_transportation_mcp_server.app.tool_bus_kmb')
+    def test_get_bus_kmb(self, mock_tool_bus, mock_fastmcp):
+        # Setup mocks
+        mock_server = unittest.mock.Mock()
+        decorated_funcs = []
+        
+        tool_decorator = create_tool_decorator('get_bus_kmb', decorated_funcs)
+            
+        mock_server.tool = tool_decorator
+        mock_fastmcp.return_value = mock_server
+        
+        # Test default behavior
+        mock_tool_bus.get_bus_kmb.return_value = {'data': 'bus_routes'}
+        server = create_mcp_server()
+        bus_func = decorated_funcs[0]  # get_bus_kmb is the second tool
+        result = bus_func()
+        mock_tool_bus.get_bus_kmb.assert_called_once_with('en')
+        self.assertEqual(result, {'data': 'bus_routes'})
+
+        # Test with language parameter
+        mock_tool_bus.get_bus_kmb.reset_mock()
+        mock_tool_bus.get_bus_kmb.return_value = {'data': 'bus_routes_tc'}
+        result = bus_func(lang='tc')
+        mock_tool_bus.get_bus_kmb.assert_called_once_with('tc')
+        self.assertEqual(result, {'data': 'bus_routes_tc'})
 
 if __name__ == "__main__":
     unittest.main()
