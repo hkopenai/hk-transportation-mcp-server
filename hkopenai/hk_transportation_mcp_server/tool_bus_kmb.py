@@ -17,6 +17,11 @@ def fetch_bus_routes(lang: str = 'en') -> List[Dict]:
     response = urllib.request.urlopen(url)
     data = json.loads(response.read().decode('utf-8'))
     
+    # Validate language code, default to 'en' if invalid
+    valid_langs = ['en', 'tc', 'sc']
+    if lang not in valid_langs:
+        lang = 'en'
+    
     # Filter fields based on language
     filtered_routes = []
     for route in data['data']:
@@ -36,7 +41,7 @@ def get_bus_kmb(
                json_schema_extra={"enum": ["en", "tc", "sc"]})] = 'en'
 ) -> Dict:
     """Get all bus routes of Kowloon Motor Bus (KMB) and Long Win Bus Services Hong Kong"""
-    routes = fetch_bus_routes(lang)
+    routes = fetch_bus_routes(lang if lang else 'en')
     return {
         "type": "RouteList",
         "version": "1.0",

@@ -77,7 +77,7 @@ def fetch_passenger_traffic_data(
 def get_passenger_stats(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None
-) -> Dict:
+) -> List[Dict]:
     """Get passenger traffic statistics"""
     data = fetch_passenger_traffic_data(start_date, end_date)
     return data
