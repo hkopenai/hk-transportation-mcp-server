@@ -1,43 +1,35 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+requires = [ "setuptools>=42", "wheel",]
 build-backend = "setuptools.build_meta"
-
-[tool.setuptools]
-packages = ["hkopenai.hk_transportation_mcp_server"]
-include-package-data = false
-
-[tool.hatch.build.targets.wheel]
-packages = ["hkopenai"]
-
-[tool.bandit]
-exclude_dirs = ["venv", ".venv", "tests"]
-
-[project.urls]
-repository = "https://github.com/hkopenai/hk-transportation-mcp-server.git"
 
 [project]
 name = "hkopenai.hk_transportation_mcp_server"
-version = "0.1.8"
+version = "0.2.8"
 description = "Hong Kong transportation MCP Server providing transportation data tools"
 readme = "README.md"
 requires-python = ">=3.7"
-authors = [
-    {name = "Neo Chow", email = "neo@01man.com"}
-]
 license = "MIT"
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "Operating System :: OS Independent",
-]
-dependencies = [
-    "fastmcp>=0.1.0",
-    "requests>=2.31.0",
-    "pytest>=8.2.0",
-    "pytest-cov>=6.1.1"
-]
+classifiers = [ "Programming Language :: Python :: 3", "Operating System :: OS Independent",]
+dependencies = [ "fastmcp>=0.1.0", "requests>=2.31.0", "pytest>=8.2.0", "pytest-cov>=6.1.1",]
+[[project.authors]]
+name = "Neo Chow"
+email = "neo@01man.com"
+
+[tool.setuptools]
+packages = [ "hkopenai.hk_transportation_mcp_server",]
+include-package-data = false
+
+[tool.bandit]
+exclude_dirs = [ "venv", ".venv", "tests",]
+
+[project.urls]
+repository = "https://github.com/hkopenai/hk-transportation-mcp-server.git"
 
 [project.scripts]
 hk_transportation_mcp_server = "hkopenai.hk_transportation_mcp_server.app:main"
 
 [tool.pytest.ini_options]
 asyncio_default_fixture_loop_scope = "function"
+
+[tool.hatch.build.targets.wheel]
+packages = [ "hkopenai",]
