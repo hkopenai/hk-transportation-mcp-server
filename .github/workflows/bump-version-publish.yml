@@ -27,7 +27,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install build twine toml-cli
+        pip install build twine toml
 
     - name: Bump minor version
       run: |
