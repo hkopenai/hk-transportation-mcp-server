@@ -13,6 +13,9 @@ This is an MCP server that provides access to transportation related data in Hon
 ### Real time Arrival Data of Kowloon Motor Bus and Long Win Bus Services
 - Get all bus routes of Kowloon Motor Bus (KMB) and Long Win Bus Services. Filter by language (English, Traditional Chinese, Simplified Chinese)
 
+### Land Boundary Control Points Waiting Times
+- Fetch current waiting times at land boundary control points in Hong Kong. Filter by language (English, Traditional Chinese, Simplified Chinese)
+
 ## Data Source
 
 - Passenger traffic data from Hong Kong Immigration Department
@@ -22,6 +25,7 @@ This is an MCP server that provides access to transportation related data in Hon
 
 * How many hong kong arrival yesterday through high speed railway.
 * Get all KMB/LWB bus routes in Traditional Chinese.
+* What are the current waiting times at Hong Kong land boundary control points?
 
 ## Setup
 

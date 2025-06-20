@@ -106,5 +106,33 @@ class TestApp(unittest.TestCase):
         mock_tool_bus.get_bus_kmb.assert_called_once_with('tc')
         self.assertEqual(result, {'data': 'bus_routes_tc'})
 
+    @patch('hkopenai.hk_transportation_mcp_server.app.FastMCP')
+    @patch('hkopenai.hk_transportation_mcp_server.app.tool_land_custom_wait_time')
+    def test_get_land_boundary_wait_times(self, mock_tool_land, mock_fastmcp):
+        # Setup mocks
+        mock_server = unittest.mock.Mock()
+        decorated_funcs = []
+        
+        tool_decorator = create_tool_decorator('get_land_boundary_wait_times', decorated_funcs)
+            
+        mock_server.tool = tool_decorator
+        mock_fastmcp.return_value = mock_server
+        
+        # Test default behavior
+        mock_tool_land.register_tools.return_value = [Mock()]
+        mock_tool_land.register_tools.return_value[0].execute.return_value = "Waiting times data"
+        server = create_mcp_server()
+        wait_time_func = decorated_funcs[0]  # get_land_boundary_wait_times is the third tool
+        result = wait_time_func()
+        mock_tool_land.register_tools.return_value[0].execute.assert_called_once_with({"lang": "en"})
+        self.assertEqual(result, "Waiting times data")
+
+        # Test with language parameter
+        mock_tool_land.register_tools.return_value[0].execute.reset_mock()
+        mock_tool_land.register_tools.return_value[0].execute.return_value = "Waiting times data in TC"
+        result = wait_time_func(lang='tc')
+        mock_tool_land.register_tools.return_value[0].execute.assert_called_once_with({"lang": "tc"})
+        self.assertEqual(result, "Waiting times data in TC")
+
 if __name__ == "__main__":
     unittest.main()

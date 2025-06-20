@@ -1,6 +1,6 @@
 import argparse
 from fastmcp import FastMCP
-from hkopenai.hk_transportation_mcp_server import tool_passenger_traffic, tool_bus_kmb
+from hkopenai.hk_transportation_mcp_server import tool_passenger_traffic, tool_bus_kmb, tool_land_custom_wait_time
 from typing import Dict, Annotated, Optional
 from pydantic import Field
 
@@ -24,6 +24,14 @@ def create_mcp_server():
         lang: Annotated[Optional[str], Field(description="Language (en/tc/sc) English, Traditional Chinese, Simplified Chinese. Default English", json_schema_extra={"enum": ["en", "tc", "sc"]})] = 'en'
     ) -> Dict:
         return tool_bus_kmb.get_bus_kmb(lang)
+
+    @mcp.tool(
+        description="Fetch current waiting times at land boundary control points in Hong Kong."
+    )
+    def get_land_boundary_wait_times(
+        lang: Annotated[Optional[str], Field(description="Language (en/tc/sc) English, Traditional Chinese, Simplified Chinese. Default English", json_schema_extra={"enum": ["en", "tc", "sc"]})] = 'en'
+    ) -> str:
+        return tool_land_custom_wait_time.register_tools()[0].execute({"lang": lang})
 
     return mcp
 def main():
