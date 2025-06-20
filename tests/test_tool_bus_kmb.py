@@ -62,5 +62,31 @@ class TestBusKMB(unittest.TestCase):
         self.assertEqual(result[0]['origin'], '竹园邨')
         self.assertEqual(result[0]['destination'], '尖沙咀码头')
 
+    def test_invalid_language_code(self):
+        result = fetch_bus_routes('xx')  # Invalid language code
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0]['origin'], 'CHUK YUEN ESTATE')  # Should default to English
+
+    def test_api_unavailable(self):
+        with patch('urllib.request.urlopen', side_effect=Exception('Connection error')):
+            with self.assertRaises(Exception):
+                fetch_bus_routes()
+
+    def test_invalid_json_response(self):
+        with patch('urllib.request.urlopen', return_value=mock_open(read_data=b'Invalid JSON')()):
+            with self.assertRaises(json.JSONDecodeError):
+                fetch_bus_routes()
+
+    def test_empty_data_response(self):
+        empty_response = {
+            "type": "RouteList",
+            "version": "1.0",
+            "generated_timestamp": "2025-06-12T21:32:34+08:00",
+            "data": []
+        }
+        with patch('urllib.request.urlopen', return_value=mock_open(read_data=json.dumps(empty_response).encode('utf-8'))()):
+            result = fetch_bus_routes()
+            self.assertEqual(len(result), 0)
+
 if __name__ == "__main__":
     unittest.main()

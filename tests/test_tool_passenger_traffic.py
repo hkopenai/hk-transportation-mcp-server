@@ -73,5 +73,32 @@ class TestPassengerTraffic(unittest.TestCase):
             self.assertEqual(result[0]['date'], '04-01-2021')
             self.assertEqual(result[-1]['date'], '02-01-2021')
 
+    def test_invalid_date_format(self):
+        with patch('urllib.request.urlopen', return_value=mock_open(read_data=self.CSV_DATA.encode('utf-8'))()):
+            with self.assertRaises(ValueError):
+                fetch_passenger_traffic_data(start_date='2021-01-02')  # Wrong format
+            with self.assertRaises(ValueError):
+                fetch_passenger_traffic_data(end_date='2021-01-02')  # Wrong format
+
+    def test_dates_out_of_range(self):
+        with patch('urllib.request.urlopen', return_value=mock_open(read_data=self.CSV_DATA.encode('utf-8'))()):
+            result = fetch_passenger_traffic_data(start_date='01-01-2020')  # Before data range
+            self.assertEqual(len(result), 16)  # Should return all data
+            result = fetch_passenger_traffic_data(end_date='01-01-2022')  # After data range
+            self.assertEqual(len(result), 0)  # No data can be return
+
+    def test_data_source_unavailable(self):
+        with patch('urllib.request.urlopen', side_effect=Exception('Connection error')):
+            with self.assertRaises(Exception):
+                fetch_passenger_traffic_data()
+
+    def test_malformed_csv_data(self):
+        malformed_data = """\ufeffDate,Control Point,Arrival / Departure,Hong Kong Residents,Mainland Visitors,Other Visitors,Total
+01-01-2021,Airport,Arrival,invalid,0,9,350
+"""
+        with patch('urllib.request.urlopen', return_value=mock_open(read_data=malformed_data.encode('utf-8'))()):
+            with self.assertRaises(ValueError):
+                fetch_passenger_traffic_data()
+
 if __name__ == '__main__':
     unittest.main()
