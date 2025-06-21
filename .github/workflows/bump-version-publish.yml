@@ -10,6 +10,9 @@ on:
         type: choice
         options:
         - minor_and_publish
+        - minor
+        - patch_and_publish
+        - patch
         - publish
 
 jobs:
@@ -18,7 +21,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       with:
-        fetch-options: '--depth=0'
+        fetch-depth: 0
         token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set up Python
@@ -31,14 +34,34 @@ jobs:
         python -m pip install --upgrade pip
         pip install build twine toml
 
-    - name: Bump minor version
-      if: github.event.inputs.version_type == 'minor_and_publish'
+    - name: Determine version bump type
       run: |
-        python -c "import toml; config = toml.load('pyproject.toml'); version = config['project']['version']; major, minor, patch = map(int, version.split('.')); config['project']['version'] = f'{major}.{minor+1}.0'; toml.dump(config, open('pyproject.toml', 'w'))"
+        if [[ "${{ github.event.inputs.version_type }}" == "minor_and_publish" || "${{ github.event.inputs.version_type }}" == "minor" ]]; then
+          echo "BUMP_TYPE=minor" >> $GITHUB_ENV
+        elif [[ "${{ github.event.inputs.version_type }}" == "patch_and_publish" || "${{ github.event.inputs.version_type }}" == "patch" ]]; then
+          echo "BUMP_TYPE=patch" >> $GITHUB_ENV
+        else
+          echo "BUMP_TYPE=none" >> $GITHUB_ENV
+        fi
+        if [[ "${{ github.event.inputs.version_type }}" == *"_and_publish"* || "${{ github.event.inputs.version_type }}" == "publish" ]]; then
+          echo "PUBLISH=true" >> $GITHUB_ENV
+        else
+          echo "PUBLISH=false" >> $GITHUB_ENV
+        fi
+
+    - name: Bump version
+      if: env.BUMP_TYPE != 'none'
+      run: |
+        if [[ "${{ env.BUMP_TYPE }}" == "minor" ]]; then
+          python -c "import toml; config = toml.load('pyproject.toml'); version = config['project']['version']; major, minor, patch = map(int, version.split('.')); config['project']['version'] = f'{major}.{minor+1}.0'; toml.dump(config, open('pyproject.toml', 'w'))"
+          git commit -m 'Bump minor version'
+        elif [[ "${{ env.BUMP_TYPE }}" == "patch" ]]; then
+          python -c "import toml; config = toml.load('pyproject.toml'); version = config['project']['version']; major, minor, patch = map(int, version.split('.')); config['project']['version'] = f'{major}.{minor}.{patch+1}'; toml.dump(config, open('pyproject.toml', 'w'))"
+          git commit -m 'Bump patch version'
+        fi
         git config --global user.name 'GitHub Action'
         git config --global user.email 'action@github.com'
         git add pyproject.toml
-        git commit -m 'Bump minor version'
         git push origin main
 
     - name: Create Tag
@@ -55,6 +78,7 @@ jobs:
       run: python -m build
 
     - name: Publish to PyPI
+      if: env.PUBLISH == 'true'
       env:
         TWINE_USERNAME: ${{ "__token__" }}
         TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
