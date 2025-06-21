@@ -9,7 +9,8 @@ on:
         default: 'minor'
         type: choice
         options:
-        - minor
+        - minor_and_publish
+        - publish
 
 jobs:
   bump-version-and-publish:
@@ -31,6 +32,7 @@ jobs:
         pip install build twine toml
 
     - name: Bump minor version
+      if: github.event.inputs.version_type == 'minor_and_publish'
       run: |
         python -c "import toml; config = toml.load('pyproject.toml'); version = config['project']['version']; major, minor, patch = map(int, version.split('.')); config['project']['version'] = f'{major}.{minor+1}.{patch}'; toml.dump(config, open('pyproject.toml', 'w'))"
         git config --global user.name 'GitHub Action'
