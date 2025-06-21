@@ -34,7 +34,7 @@ jobs:
     - name: Bump minor version
       if: github.event.inputs.version_type == 'minor_and_publish'
       run: |
-        python -c "import toml; config = toml.load('pyproject.toml'); version = config['project']['version']; major, minor, patch = map(int, version.split('.')); config['project']['version'] = f'{major}.{minor+1}.{patch}'; toml.dump(config, open('pyproject.toml', 'w'))"
+        python -c "import toml; config = toml.load('pyproject.toml'); version = config['project']['version']; major, minor, patch = map(int, version.split('.')); config['project']['version'] = f'{major}.{minor+1}.0'; toml.dump(config, open('pyproject.toml', 'w'))"
         git config --global user.name 'GitHub Action'
         git config --global user.email 'action@github.com'
         git add pyproject.toml
@@ -44,14 +44,18 @@ jobs:
     - name: Create Tag
       run: |
         VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
-        git tag v$VERSION
-        git push origin v$VERSION
+        if ! git rev-parse "refs/tags/v$VERSION" >/dev/null 2>&1; then
+          git tag v$VERSION
+          git push origin v$VERSION
+        else
+          echo "Tag v$VERSION already exists, skipping tag creation."
+        fi
 
     - name: Build package
       run: python -m build
 
     - name: Publish to PyPI
       env:
-        TWINE_USERNAME: "__token__"
+        TWINE_USERNAME: ${{ "__token__" }}
         TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
       run: python -m twine upload dist/*
