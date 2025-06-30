@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch, Mock
-from hkopenai.hk_transportation_mcp_server.app import create_mcp_server
+from hkopenai.hk_transportation_mcp_server.server import create_mcp_server
 from hkopenai.hk_transportation_mcp_server.tool_passenger_traffic import fetch_passenger_traffic_data
 
 def create_tool_decorator(expected_name, decorated_funcs):
@@ -19,8 +19,8 @@ def create_tool_decorator(expected_name, decorated_funcs):
     return tool_decorator
 
 class TestApp(unittest.TestCase):
-    @patch('hkopenai.hk_transportation_mcp_server.app.FastMCP')
-    @patch('hkopenai.hk_transportation_mcp_server.app.tool_passenger_traffic')
+    @patch('hkopenai.hk_transportation_mcp_server.server.FastMCP')
+    @patch('hkopenai.hk_transportation_mcp_server.server.tool_passenger_traffic')
     def test_create_mcp_server(self, mock_tool_passenger, mock_fastmcp):
         # Setup mocks
         mock_server = unittest.mock.Mock()
@@ -47,7 +47,7 @@ class TestApp(unittest.TestCase):
         mock_tool_passenger.get_passenger_stats.assert_called_once()
 
     @patch('hkopenai.hk_transportation_mcp_server.app.FastMCP')
-    @patch('hkopenai.hk_transportation_mcp_server.app.tool_passenger_traffic')
+    @patch('hkopenai.hk_transportation_mcp_server.server.tool_passenger_traffic')
     def test_get_passenger_stats(self, mock_tool_passenger, mock_fastmcp):
         # Setup mocks
         mock_server = unittest.mock.Mock()
@@ -80,7 +80,7 @@ class TestApp(unittest.TestCase):
             passenger_func(start_date='2025-01-01')  # Wrong format
 
     @patch('hkopenai.hk_transportation_mcp_server.app.FastMCP')
-    @patch('hkopenai.hk_transportation_mcp_server.app.tool_bus_kmb')
+    @patch('hkopenai.hk_transportation_mcp_server.server.tool_bus_kmb')
     def test_get_bus_kmb(self, mock_tool_bus, mock_fastmcp):
         # Setup mocks
         mock_server = unittest.mock.Mock()
@@ -107,7 +107,7 @@ class TestApp(unittest.TestCase):
         self.assertEqual(result, {'data': 'bus_routes_tc'})
 
     @patch('hkopenai.hk_transportation_mcp_server.app.FastMCP')
-    @patch('hkopenai.hk_transportation_mcp_server.app.tool_land_custom_wait_time')
+    @patch('hkopenai.hk_transportation_mcp_server.server.tool_land_custom_wait_time')
     def test_get_land_boundary_wait_times(self, mock_tool_land, mock_fastmcp):
         # Setup mocks
         mock_server = unittest.mock.Mock()

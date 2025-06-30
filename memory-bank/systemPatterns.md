@@ -17,7 +17,7 @@ The Hong Kong Transportation MCP Server is built as a modular Python application
 - **Singleton Pattern**: Applied to certain shared resources or configuration managers to ensure a single point of access across the application.
 
 ## Component Relationships
-- **App Core (`app.py`)**: Central hub that initializes and manages all tools and resources, serving as the entry point for MCP interactions.
+- **App Core (`server.py`)**: Central hub that initializes and manages all tools and resources, serving as the entry point for MCP interactions.
 - **Tools (`tool_*.py`)**: Independent modules for specific data types, each interacting with the data layer to fetch and process information, then returning results to the app core for API exposure.
 - **Tests (`tests/`)**: Comprehensive test suite that validates individual tool functionality and overall system integration.
 
