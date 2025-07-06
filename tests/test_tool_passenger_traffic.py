@@ -1,9 +1,25 @@
+"""
+Unit tests for the Passenger Traffic Data fetching tool.
+
+This module tests the functionality of fetching passenger traffic data from the API,
+ensuring correct handling of date filters and error conditions.
+"""
+
 import unittest
 from unittest.mock import patch, mock_open
-from hkopenai.hk_transportation_mcp_server.tool_passenger_traffic import fetch_passenger_traffic_data
+from hkopenai.hk_transportation_mcp_server.tool_passenger_traffic import (
+    fetch_passenger_traffic_data,
+)
 from datetime import datetime, timedelta
 
+
 class TestPassengerTraffic(unittest.TestCase):
+    """
+    Test class for verifying the functionality of the Passenger Traffic Data fetching tool.
+    
+    This class contains tests to ensure that the fetch_passenger_traffic_data function handles
+    different date filters and error conditions appropriately.
+    """
     CSV_DATA = """\ufeffDate,Control Point,Arrival / Departure,Hong Kong Residents,Mainland Visitors,Other Visitors,Total
 01-01-2021,Airport,Arrival,341,0,9,350
 01-01-2021,Airport,Departure,803,17,28,848
@@ -24,81 +40,146 @@ class TestPassengerTraffic(unittest.TestCase):
 """
 
     def setUp(self):
-        self.mock_urlopen = patch('urllib.request.urlopen').start()
-        self.mock_urlopen.return_value = mock_open(read_data=self.CSV_DATA.encode('utf-8'))()
+        """
+        Set up test fixtures before each test method.
         
+        This method sets up mocks for the urllib.request.urlopen function and the get_current_date
+        function to simulate API responses and control the date used in tests.
+        """
+        self.mock_urlopen = patch("urllib.request.urlopen").start()
+        self.mock_urlopen.return_value = mock_open(
+            read_data=self.CSV_DATA.encode("utf-8")
+        )()
+
         # Mock get_current_date() to return fixed date matching test data
-        self.mock_date = patch('hkopenai.hk_transportation_mcp_server.tool_passenger_traffic.get_current_date').start()
-        self.mock_date.return_value = datetime(2021, 1, 8)  # Matches latest date in test data
-        
+        self.mock_date = patch(
+            "hkopenai.hk_transportation_mcp_server.tool_passenger_traffic.get_current_date"
+        ).start()
+        self.mock_date.return_value = datetime(
+            2021, 1, 8
+        )  # Matches latest date in test data
+
         self.addCleanup(patch.stopall)
 
-    @patch('urllib.request.urlopen')
+    @patch("urllib.request.urlopen")
     def test_fetch_passenger_traffic_data(self, mock_urlopen):
-        mock_urlopen.return_value = mock_open(read_data=self.CSV_DATA.encode('utf-8'))()
+        """
+        Test fetching passenger traffic data with default parameters (last 7 days).
         
+        Args:
+            mock_urlopen: Mock object for the urllib.request.urlopen function to simulate API responses.
+        """
+        mock_urlopen.return_value = mock_open(read_data=self.CSV_DATA.encode("utf-8"))()
+
         result = fetch_passenger_traffic_data()
-        
+
         # Should return last 7 days by default
         self.assertEqual(len(result), 14)  # 7 days * 2 directions
-        self.assertEqual(result[0], {
-            'date': '08-01-2021',
-            'control_point': 'Airport',
-            'direction': 'Arrival',
-            'hk_residents': 650,
-            'mainland_visitors': 12,
-            'other_visitors': 22,
-            'total': 684
-        })
+        self.assertEqual(
+            result[0],
+            {
+                "date": "08-01-2021",
+                "control_point": "Airport",
+                "direction": "Arrival",
+                "hk_residents": 650,
+                "mainland_visitors": 12,
+                "other_visitors": 22,
+                "total": 684,
+            },
+        )
 
     def test_start_date_filter(self):
-        with patch('urllib.request.urlopen', return_value=mock_open(read_data=self.CSV_DATA.encode('utf-8'))()):
-            result = fetch_passenger_traffic_data(start_date='03-01-2021')
+        """
+        Test fetching passenger traffic data with a specified start date.
+        """
+        with patch(
+            "urllib.request.urlopen",
+            return_value=mock_open(read_data=self.CSV_DATA.encode("utf-8"))(),
+        ):
+            result = fetch_passenger_traffic_data(start_date="03-01-2021")
             self.assertEqual(len(result), 12)  # 6 days * 2 directions
-            self.assertEqual(result[0]['date'], '08-01-2021')
+            self.assertEqual(result[0]["date"], "08-01-2021")
 
     def test_end_date_filter(self):
-        with patch('urllib.request.urlopen', return_value=mock_open(read_data=self.CSV_DATA.encode('utf-8'))()):
-            result = fetch_passenger_traffic_data(end_date='03-01-2021')
+        """
+        Test fetching passenger traffic data with a specified end date.
+        """
+        with patch(
+            "urllib.request.urlopen",
+            return_value=mock_open(read_data=self.CSV_DATA.encode("utf-8"))(),
+        ):
+            result = fetch_passenger_traffic_data(end_date="03-01-2021")
             self.assertEqual(len(result), 6)  # 3 days * 2 directions
-            self.assertEqual(result[-1]['date'], '01-01-2021')
+            self.assertEqual(result[-1]["date"], "01-01-2021")
 
     def test_both_date_filters(self):
-        with patch('urllib.request.urlopen', return_value=mock_open(read_data=self.CSV_DATA.encode('utf-8'))()):
+        """
+        Test fetching passenger traffic data with both start and end date filters.
+        """
+        with patch(
+            "urllib.request.urlopen",
+            return_value=mock_open(read_data=self.CSV_DATA.encode("utf-8"))(),
+        ):
             result = fetch_passenger_traffic_data(
-                start_date='02-01-2021',
-                end_date='04-01-2021',
+                start_date="02-01-2021",
+                end_date="04-01-2021",
             )
             self.assertEqual(len(result), 6)  # 3 days * 2 directions
-            self.assertEqual(result[0]['date'], '04-01-2021')
-            self.assertEqual(result[-1]['date'], '02-01-2021')
+            self.assertEqual(result[0]["date"], "04-01-2021")
+            self.assertEqual(result[-1]["date"], "02-01-2021")
 
     def test_invalid_date_format(self):
-        with patch('urllib.request.urlopen', return_value=mock_open(read_data=self.CSV_DATA.encode('utf-8'))()):
+        """
+        Test handling of invalid date format in start and end date parameters.
+        """
+        with patch(
+            "urllib.request.urlopen",
+            return_value=mock_open(read_data=self.CSV_DATA.encode("utf-8"))(),
+        ):
             with self.assertRaises(ValueError):
-                fetch_passenger_traffic_data(start_date='2021-01-02')  # Wrong format
+                fetch_passenger_traffic_data(start_date="2021-01-02")  # Wrong format
             with self.assertRaises(ValueError):
-                fetch_passenger_traffic_data(end_date='2021-01-02')  # Wrong format
+                fetch_passenger_traffic_data(end_date="2021-01-02")  # Wrong format
 
     def test_dates_out_of_range(self):
-        with patch('urllib.request.urlopen', return_value=mock_open(read_data=self.CSV_DATA.encode('utf-8'))()):
-            result = fetch_passenger_traffic_data(start_date='01-01-2020')  # Before data range
+        """
+        Test handling of date filters that are out of the available data range.
+        """
+        with patch(
+            "urllib.request.urlopen",
+            return_value=mock_open(read_data=self.CSV_DATA.encode("utf-8"))(),
+        ):
+            result = fetch_passenger_traffic_data(
+                start_date="01-01-2020"
+            )  # Before data range
             self.assertEqual(len(result), 16)  # Should return all data
-            result = fetch_passenger_traffic_data(end_date='01-01-2022')  # After data range
+            result = fetch_passenger_traffic_data(
+                end_date="01-01-2022"
+            )  # After data range
             self.assertEqual(len(result), 0)  # No data can be return
 
     def test_data_source_unavailable(self):
-        with patch('urllib.request.urlopen', side_effect=Exception('Connection error')):
+        """
+        Test handling of API unavailability by simulating a connection error.
+        """
+        with patch("urllib.request.urlopen", side_effect=Exception("Connection error")):
             with self.assertRaises(Exception):
                 fetch_passenger_traffic_data()
 
     def test_malformed_csv_data(self):
+        """
+        Test handling of malformed CSV data from the API.
+        """
         malformed_data = """\ufeffDate,Control Point,Arrival / Departure,Hong Kong Residents,Mainland Visitors,Other Visitors,Total
 01-01-2021,Airport,Arrival,invalid,0,9,350
 """
-        with patch('urllib.request.urlopen', return_value=mock_open(read_data=malformed_data.encode('utf-8'))()):
+        with patch(
+            "urllib.request.urlopen",
+            return_value=mock_open(read_data=malformed_data.encode("utf-8"))(),
+        ):
             with self.assertRaises(ValueError):
                 fetch_passenger_traffic_data()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

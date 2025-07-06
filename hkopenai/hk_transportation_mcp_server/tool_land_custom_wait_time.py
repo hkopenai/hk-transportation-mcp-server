@@ -3,7 +3,14 @@
 import requests
 from mcp import Tool, Resource
 
+
 class LandCustomWaitTimeTool(Tool):
+    """
+    A tool for fetching current waiting times at land boundary control points in Hong Kong.
+    
+    This class extends the base Tool class to provide functionality for retrieving
+    and formatting wait time data from the Hong Kong Immigration Department API.
+    """
     def __init__(self):
         super().__init__(
             name="get_land_boundary_wait_times",
@@ -12,17 +19,14 @@ class LandCustomWaitTimeTool(Tool):
                 "type": "object",
                 "properties": {
                     "lang": {
-                        "anyOf": [
-                            {"type": "string"},
-                            {"type": "null"}
-                        ],
+                        "anyOf": [{"type": "string"}, {"type": "null"}],
                         "default": "en",
                         "description": "Language (en/tc/sc) English, Traditional Chinese, Simplified Chinese. Default English",
                         "enum": ["en", "tc", "sc"],
-                        "title": "Lang"
+                        "title": "Lang",
                     }
-                }
-            }
+                },
+            },
         )
         self.control_points = {
             "HYW": "Heung Yuen Wai",
@@ -32,29 +36,50 @@ class LandCustomWaitTimeTool(Tool):
             "LWS": "Lo Wu",
             "MKT": "Man Kam To",
             "SBC": "Shenzhen Bay",
-            "STK": "Sha Tau Kok"
+            "STK": "Sha Tau Kok",
         }
         self.status_codes = {
             0: "Normal (Generally less than 15 mins)",
             1: "Busy (Generally less than 30 mins)",
             2: "Very Busy (Generally 30 mins or above)",
             4: "System Under Maintenance",
-            99: "Non Service Hours"
+            99: "Non Service Hours",
         }
 
     def execute(self, arguments):
+        """
+        Execute the tool to fetch waiting times based on provided arguments.
+        
+        Args:
+            arguments (dict): A dictionary containing the input parameters, including 'lang' for language preference.
+            
+        Returns:
+            str: Formatted string containing the waiting times at various control points.
+        """
         # Note: error_handler decorator removed due to import issue; error handling to be implemented manually if needed
         lang = arguments.get("lang", "en")
         url = "https://secure1.info.gov.hk/immd/mobileapps/2bb9ae17/data/CPQueueTimeR.json"
         response = requests.get(url, timeout=10)
         response.raise_for_status()
         data = response.json()
-        
+
         result = self.format_wait_times(data, lang)
         return result
 
     def format_wait_times(self, data, lang):
-        formatted_result = f"Land Boundary Control Points Waiting Times ({lang.upper()}):\n\n"
+        """
+        Format the waiting time data into a readable string.
+        
+        Args:
+            data (dict): The JSON data containing wait times for different control points.
+            lang (str): The language code for formatting the output (en/tc/sc).
+            
+        Returns:
+            str: A formatted string listing wait times for arrival and departure at each control point.
+        """
+        formatted_result = (
+            f"Land Boundary Control Points Waiting Times ({lang.upper()}):\n\n"
+        )
         for code, name in self.control_points.items():
             if code in data:
                 arr_status = data[code].get("arrQueue", 99)
@@ -68,5 +93,12 @@ class LandCustomWaitTimeTool(Tool):
                 formatted_result += f"{name} ({code}): Data not available\n\n"
         return formatted_result
 
+
 def register_tools():
+    """
+    Register the LandCustomWaitTimeTool for use in the MCP server.
+    
+    Returns:
+        list: A list containing an instance of LandCustomWaitTimeTool.
+    """
     return [LandCustomWaitTimeTool()]
