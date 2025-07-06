@@ -57,12 +57,30 @@ class TestLandCustomWaitTimeTool(unittest.TestCase):
         # Execute the tool
         result = self.tool.execute({"lang": "en"})
 
-        # Check if the result contains expected formatted output
-        self.assertIn("Land Boundary Control Points Waiting Times (EN)", result)
-        self.assertIn("Heung Yuen Wai (HYW)", result)
-        self.assertIn("Arrival: Normal (Generally less than 15 mins)", result)
-        self.assertIn("Sha Tau Kok (STK)", result)
-        self.assertIn("Arrival: Non Service Hours", result)
+        # Check if the result contains expected JSON structure and data
+        self.assertTrue(isinstance(result, dict))
+        result_dict = result if isinstance(result, dict) else {}
+        type_val = result_dict["type"] if "type" in result_dict else ""
+        version_val = result_dict["version"] if "version" in result_dict else ""
+        self.assertEqual(type_val, "WaitTimes")
+        self.assertEqual(version_val, "1.0")
+        data = result_dict["data"] if "data" in result_dict else {}
+        self.assertTrue(isinstance(data, dict))
+        data_dict = data if isinstance(data, dict) else {}
+        language_val = data_dict["language"] if "language" in data_dict else ""
+        self.assertEqual(language_val, "EN")
+        control_points = data_dict["control_points"] if "control_points" in data_dict else []
+        self.assertTrue(isinstance(control_points, list))
+        hyw = next((cp for cp in control_points if isinstance(cp, dict) and "code" in cp and cp["code"] == "HYW"), {})
+        stk = next((cp for cp in control_points if isinstance(cp, dict) and "code" in cp and cp["code"] == "STK"), {})
+        self.assertTrue(isinstance(hyw, dict))
+        self.assertTrue(isinstance(stk, dict))
+        hyw_dict = hyw if isinstance(hyw, dict) else {}
+        stk_dict = stk if isinstance(stk, dict) else {}
+        hyw_arrival = hyw_dict["arrival"] if "arrival" in hyw_dict else ""
+        stk_arrival = stk_dict["arrival"] if "arrival" in stk_dict else ""
+        self.assertEqual(hyw_arrival, "Normal (Generally less than 15 mins)")
+        self.assertEqual(stk_arrival, "Non Service Hours")
 
     @patch("requests.get")
     def test_execute_tc_language(self, mock_get):
@@ -83,10 +101,25 @@ class TestLandCustomWaitTimeTool(unittest.TestCase):
         # Execute the tool with Traditional Chinese
         result = self.tool.execute({"lang": "tc"})
 
-        # Check if the result contains expected formatted output
-        self.assertIn("Land Boundary Control Points Waiting Times (TC)", result)
-        self.assertIn("Heung Yuen Wai (HYW)", result)
-        self.assertIn("Arrival: Normal (Generally less than 15 mins)", result)
+        # Check if the result contains expected JSON structure and data
+        self.assertTrue(isinstance(result, dict))
+        result_dict = result if isinstance(result, dict) else {}
+        type_val = result_dict["type"] if "type" in result_dict else ""
+        version_val = result_dict["version"] if "version" in result_dict else ""
+        self.assertEqual(type_val, "WaitTimes")
+        self.assertEqual(version_val, "1.0")
+        data = result_dict["data"] if "data" in result_dict else {}
+        self.assertTrue(isinstance(data, dict))
+        data_dict = data if isinstance(data, dict) else {}
+        language_val = data_dict["language"] if "language" in data_dict else ""
+        self.assertEqual(language_val, "TC")
+        control_points = data_dict["control_points"] if "control_points" in data_dict else []
+        self.assertTrue(isinstance(control_points, list))
+        hyw = next((cp for cp in control_points if isinstance(cp, dict) and "code" in cp and cp["code"] == "HYW"), {})
+        self.assertTrue(isinstance(hyw, dict))
+        hyw_dict = hyw if isinstance(hyw, dict) else {}
+        hyw_arrival = hyw_dict["arrival"] if "arrival" in hyw_dict else ""
+        self.assertEqual(hyw_arrival, "Normal (Generally less than 15 mins)")
 
     @patch("requests.get")
     def test_execute_sc_language(self, mock_get):
@@ -107,10 +140,25 @@ class TestLandCustomWaitTimeTool(unittest.TestCase):
         # Execute the tool with Simplified Chinese
         result = self.tool.execute({"lang": "sc"})
 
-        # Check if the result contains expected formatted output
-        self.assertIn("Land Boundary Control Points Waiting Times (SC)", result)
-        self.assertIn("Heung Yuen Wai (HYW)", result)
-        self.assertIn("Arrival: Normal (Generally less than 15 mins)", result)
+        # Check if the result contains expected JSON structure and data
+        self.assertTrue(isinstance(result, dict))
+        result_dict = result if isinstance(result, dict) else {}
+        type_val = result_dict["type"] if "type" in result_dict else ""
+        version_val = result_dict["version"] if "version" in result_dict else ""
+        self.assertEqual(type_val, "WaitTimes")
+        self.assertEqual(version_val, "1.0")
+        data = result_dict["data"] if "data" in result_dict else {}
+        self.assertTrue(isinstance(data, dict))
+        data_dict = data if isinstance(data, dict) else {}
+        language_val = data_dict["language"] if "language" in data_dict else ""
+        self.assertEqual(language_val, "SC")
+        control_points = data_dict["control_points"] if "control_points" in data_dict else []
+        self.assertTrue(isinstance(control_points, list))
+        hyw = next((cp for cp in control_points if isinstance(cp, dict) and "code" in cp and cp["code"] == "HYW"), {})
+        self.assertTrue(isinstance(hyw, dict))
+        hyw_dict = hyw if isinstance(hyw, dict) else {}
+        hyw_arrival = hyw_dict["arrival"] if "arrival" in hyw_dict else ""
+        self.assertEqual(hyw_arrival, "Normal (Generally less than 15 mins)")
 
     @patch("requests.get")
     def test_invalid_language_code(self, mock_get):
@@ -129,8 +177,24 @@ class TestLandCustomWaitTimeTool(unittest.TestCase):
         result = self.tool.execute({"lang": "xx"})
 
         # Should default to English
-        self.assertIn("Land Boundary Control Points Waiting Times (XX)", result)
-        self.assertIn("Heung Yuen Wai (HYW)", result)
+        self.assertTrue(isinstance(result, dict))
+        result_dict = result if isinstance(result, dict) else {}
+        type_val = result_dict["type"] if "type" in result_dict else ""
+        version_val = result_dict["version"] if "version" in result_dict else ""
+        self.assertEqual(type_val, "WaitTimes")
+        self.assertEqual(version_val, "1.0")
+        data = result_dict["data"] if "data" in result_dict else {}
+        self.assertTrue(isinstance(data, dict))
+        data_dict = data if isinstance(data, dict) else {}
+        language_val = data_dict["language"] if "language" in data_dict else ""
+        self.assertEqual(language_val, "XX")
+        control_points = data_dict["control_points"] if "control_points" in data_dict else []
+        self.assertTrue(isinstance(control_points, list))
+        hyw = next((cp for cp in control_points if isinstance(cp, dict) and "code" in cp and cp["code"] == "HYW"), {})
+        self.assertTrue(isinstance(hyw, dict))
+        hyw_dict = hyw if isinstance(hyw, dict) else {}
+        hyw_arrival = hyw_dict["arrival"] if "arrival" in hyw_dict else ""
+        self.assertEqual(hyw_arrival, "Normal (Generally less than 15 mins)")
 
     @patch("requests.get")
     def test_api_unavailable(self, mock_get):
@@ -144,8 +208,12 @@ class TestLandCustomWaitTimeTool(unittest.TestCase):
         mock_get.side_effect = Exception("Connection error")
 
         # Execute the tool
-        with self.assertRaises(Exception):
-            self.tool.execute({"lang": "en"})
+        result = self.tool.execute({"lang": "en"})
+
+        # Check if the result is an error JSON
+        self.assertEqual("type" in result and result["type"] or "", "Error")
+        self.assertEqual("version" in result and result["version"] or "", "1.0")
+        self.assertTrue("error" in result and "Connection error" in result["error"] or False)
 
     @patch("requests.get")
     def test_invalid_json_response(self, mock_get):
@@ -161,8 +229,12 @@ class TestLandCustomWaitTimeTool(unittest.TestCase):
         mock_get.return_value = mock_response
 
         # Execute the tool
-        with self.assertRaises(ValueError):
-            self.tool.execute({"lang": "en"})
+        result = self.tool.execute({"lang": "en"})
+
+        # Check if the result is an error JSON
+        self.assertEqual("type" in result and result["type"] or "", "Error")
+        self.assertEqual("version" in result and result["version"] or "", "1.0")
+        self.assertTrue("error" in result and "Invalid JSON" in result["error"] or False)
 
     @patch("requests.get")
     def test_empty_data_response(self, mock_get):
@@ -181,7 +253,22 @@ class TestLandCustomWaitTimeTool(unittest.TestCase):
         result = self.tool.execute({"lang": "en"})
 
         # Check if the result indicates no data
-        self.assertIn("Data not available", result)
+        self.assertTrue(isinstance(result, dict))
+        result_dict = result if isinstance(result, dict) else {}
+        type_val = result_dict["type"] if "type" in result_dict else ""
+        version_val = result_dict["version"] if "version" in result_dict else ""
+        self.assertEqual(type_val, "WaitTimes")
+        self.assertEqual(version_val, "1.0")
+        data = result_dict["data"] if "data" in result_dict else {}
+        self.assertTrue(isinstance(data, dict))
+        data_dict = data if isinstance(data, dict) else {}
+        control_points = data_dict["control_points"] if "control_points" in data_dict else []
+        self.assertTrue(isinstance(control_points, list))
+        hyw = next((cp for cp in control_points if isinstance(cp, dict) and "code" in cp and cp["code"] == "HYW"), {})
+        self.assertTrue(isinstance(hyw, dict))
+        hyw_dict = hyw if isinstance(hyw, dict) else {}
+        hyw_arrival = hyw_dict["arrival"] if "arrival" in hyw_dict else ""
+        self.assertEqual(hyw_arrival, "Data not available")
 
 
 if __name__ == "__main__":

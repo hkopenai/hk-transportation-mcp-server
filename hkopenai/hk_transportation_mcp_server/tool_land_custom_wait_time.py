@@ -54,44 +54,52 @@ class LandCustomWaitTimeTool(Tool):
             arguments (dict): A dictionary containing the input parameters, including 'lang' for language preference.
             
         Returns:
-            str: Formatted string containing the waiting times at various control points.
+            dict: JSON-compatible dictionary containing the waiting times at various control points.
         """
-        # Note: error_handler decorator removed due to import issue; error handling to be implemented manually if needed
-        lang = arguments.get("lang", "en")
-        url = "https://secure1.info.gov.hk/immd/mobileapps/2bb9ae17/data/CPQueueTimeR.json"
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        data = response.json()
+        try:
+            lang = arguments.get("lang", "en")
+            url = "https://secure1.info.gov.hk/immd/mobileapps/2bb9ae17/data/CPQueueTimeR.json"
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            data = response.json()
 
-        result = self.format_wait_times(data, lang)
-        return result
+            result = self.format_wait_times(data, lang)
+            return {"type": "WaitTimes", "version": "1.0", "data": result}
+        except Exception as e:
+            return {"type": "Error", "version": "1.0", "error": str(e)}
 
     def format_wait_times(self, data, lang):
         """
-        Format the waiting time data into a readable string.
+        Format the waiting time data into a JSON-compatible dictionary.
         
         Args:
             data (dict): The JSON data containing wait times for different control points.
             lang (str): The language code for formatting the output (en/tc/sc).
             
         Returns:
-            str: A formatted string listing wait times for arrival and departure at each control point.
+            dict: A dictionary listing wait times for arrival and departure at each control point.
         """
-        formatted_result = (
-            f"Land Boundary Control Points Waiting Times ({lang.upper()}):\n\n"
-        )
+        wait_times = []
         for code, name in self.control_points.items():
             if code in data:
                 arr_status = data[code].get("arrQueue", 99)
                 dep_status = data[code].get("depQueue", 99)
                 arr_desc = self.status_codes.get(arr_status, "Unknown")
                 dep_desc = self.status_codes.get(dep_status, "Unknown")
-                formatted_result += f"{name} ({code}):\n"
-                formatted_result += f"  Arrival: {arr_desc}\n"
-                formatted_result += f"  Departure: {dep_desc}\n\n"
+                wait_times.append({
+                    "name": name,
+                    "code": code,
+                    "arrival": arr_desc,
+                    "departure": dep_desc
+                })
             else:
-                formatted_result += f"{name} ({code}): Data not available\n\n"
-        return formatted_result
+                wait_times.append({
+                    "name": name,
+                    "code": code,
+                    "arrival": "Data not available",
+                    "departure": "Data not available"
+                })
+        return {"language": lang.upper(), "control_points": wait_times}
 
 
 def register_tools():

@@ -136,10 +136,25 @@ class TestPassengerTraffic(unittest.TestCase):
             "urllib.request.urlopen",
             return_value=mock_open(read_data=self.CSV_DATA.encode("utf-8"))(),
         ):
-            with self.assertRaises(ValueError):
-                fetch_passenger_traffic_data(start_date="2021-01-02")  # Wrong format
-            with self.assertRaises(ValueError):
-                fetch_passenger_traffic_data(end_date="2021-01-02")  # Wrong format
+            result_start = fetch_passenger_traffic_data(start_date="2021-01-02")  # Wrong format
+            self.assertTrue(isinstance(result_start, dict))
+            result_start_dict = result_start if isinstance(result_start, dict) else {}
+            type_val_start = result_start_dict.get("type", "")
+            version_val_start = result_start_dict.get("version", "")
+            self.assertEqual(type_val_start, "Error")
+            self.assertEqual(version_val_start, "1.0")
+            error_val_start = result_start_dict.get("error", "")
+            self.assertTrue("date format" in error_val_start.lower() or "invalid" in error_val_start.lower())
+
+            result_end = fetch_passenger_traffic_data(end_date="2021-01-02")  # Wrong format
+            self.assertTrue(isinstance(result_end, dict))
+            result_end_dict = result_end if isinstance(result_end, dict) else {}
+            type_val_end = result_end_dict.get("type", "")
+            version_val_end = result_end_dict.get("version", "")
+            self.assertEqual(type_val_end, "Error")
+            self.assertEqual(version_val_end, "1.0")
+            error_val_end = result_end_dict.get("error", "")
+            self.assertTrue("date format" in error_val_end.lower() or "invalid" in error_val_end.lower())
 
     def test_dates_out_of_range(self):
         """
@@ -163,8 +178,15 @@ class TestPassengerTraffic(unittest.TestCase):
         Test handling of API unavailability by simulating a connection error.
         """
         with patch("urllib.request.urlopen", side_effect=Exception("Connection error")):
-            with self.assertRaises(Exception):
-                fetch_passenger_traffic_data()
+            result = fetch_passenger_traffic_data()
+            self.assertTrue(isinstance(result, dict))
+            result_dict = result if isinstance(result, dict) else {}
+            type_val = result_dict.get("type", "")
+            version_val = result_dict.get("version", "")
+            self.assertEqual(type_val, "Error")
+            self.assertEqual(version_val, "1.0")
+            error_val = result_dict.get("error", "")
+            self.assertTrue("Connection error" in error_val)
 
     def test_malformed_csv_data(self):
         """
@@ -177,8 +199,15 @@ class TestPassengerTraffic(unittest.TestCase):
             "urllib.request.urlopen",
             return_value=mock_open(read_data=malformed_data.encode("utf-8"))(),
         ):
-            with self.assertRaises(ValueError):
-                fetch_passenger_traffic_data()
+            result = fetch_passenger_traffic_data()
+            self.assertTrue(isinstance(result, dict))
+            result_dict = result if isinstance(result, dict) else {}
+            type_val = result_dict.get("type", "")
+            version_val = result_dict.get("version", "")
+            self.assertEqual(type_val, "Error")
+            self.assertEqual(version_val, "1.0")
+            error_val = result_dict.get("error", "")
+            self.assertTrue("ValueError" in error_val or "malformed" in error_val.lower())
 
 
 if __name__ == "__main__":

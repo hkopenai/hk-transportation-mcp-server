@@ -106,8 +106,15 @@ class TestBusKMB(unittest.TestCase):
         Test handling of API unavailability by simulating a connection error.
         """
         with patch("urllib.request.urlopen", side_effect=Exception("Connection error")):
-            with self.assertRaises(Exception):
-                fetch_bus_routes()
+            result = fetch_bus_routes()
+            self.assertTrue(isinstance(result, dict))
+            result_dict = result if isinstance(result, dict) else {}
+            type_val = result_dict.get("type", "")
+            version_val = result_dict.get("version", "")
+            self.assertEqual(type_val, "Error")
+            self.assertEqual(version_val, "1.0")
+            error_val = result_dict.get("error", "")
+            self.assertTrue("Connection error" in error_val)
 
     def test_invalid_json_response(self):
         """
@@ -117,8 +124,15 @@ class TestBusKMB(unittest.TestCase):
             "urllib.request.urlopen",
             return_value=mock_open(read_data=b"Invalid JSON")(),
         ):
-            with self.assertRaises(json.JSONDecodeError):
-                fetch_bus_routes()
+            result = fetch_bus_routes()
+            self.assertTrue(isinstance(result, dict))
+            result_dict = result if isinstance(result, dict) else {}
+            type_val = result_dict.get("type", "")
+            version_val = result_dict.get("version", "")
+            self.assertEqual(type_val, "Error")
+            self.assertEqual(version_val, "1.0")
+            error_val = result_dict.get("error", "")
+            self.assertTrue("Invalid JSON" in error_val)
 
     def test_empty_data_response(self):
         """
