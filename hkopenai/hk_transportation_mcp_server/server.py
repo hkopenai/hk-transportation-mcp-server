@@ -58,7 +58,7 @@ def create_mcp_server():
                 json_schema_extra={"enum": ["en", "tc", "sc"]},
             ),
         ] = "en",
-    ) -> str:
+    ) -> Dict:
         return tool_land_custom_wait_time.register_tools()[0].execute({"lang": lang})
 
     return mcp

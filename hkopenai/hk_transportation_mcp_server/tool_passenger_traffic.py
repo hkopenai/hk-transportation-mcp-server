@@ -89,7 +89,10 @@ def fetch_passenger_traffic_data(
 
 def get_passenger_stats(
     start_date: Optional[str] = None, end_date: Optional[str] = None
-) -> List[Dict]:
+) -> Dict:
     """Get passenger traffic statistics"""
-    data = fetch_passenger_traffic_data(start_date, end_date)
-    return data
+    try:
+        data = fetch_passenger_traffic_data(start_date, end_date)
+        return {"type": "PassengerStats", "version": "1.0", "data": data}
+    except Exception as e:
+        return {"type": "Error", "version": "1.0", "error": str(e)}

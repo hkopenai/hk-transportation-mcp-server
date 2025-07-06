@@ -56,5 +56,8 @@ def get_bus_kmb(
     ] = "en",
 ) -> Dict:
     """Get all bus routes of Kowloon Motor Bus (KMB) and Long Win Bus Services Hong Kong"""
-    routes = fetch_bus_routes(lang if lang else "en")
-    return {"type": "RouteList", "version": "1.0", "data": routes}
+    try:
+        routes = fetch_bus_routes(lang if lang else "en")
+        return {"type": "RouteList", "version": "1.0", "data": routes}
+    except Exception as e:
+        return {"type": "Error", "version": "1.0", "error": str(e)}
