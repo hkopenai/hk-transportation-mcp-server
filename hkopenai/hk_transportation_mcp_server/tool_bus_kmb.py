@@ -47,11 +47,11 @@ def fetch_bus_routes(lang: str = "en") -> Union[List[Dict], Dict]:
 
         return filtered_routes
     except urllib.error.URLError as e:
-        return {"type": "Error", "version": "1.0", "error": f"Connection error: {str(e)}"}
+        return {"type": "Error", "error": f"Connection error: {str(e)}"}
     except json.JSONDecodeError as e:
-        return {"type": "Error", "version": "1.0", "error": f"Invalid JSON response: {str(e)}"}
+        return {"type": "Error", "error": f"Invalid JSON response: {str(e)}"}
     except Exception as e:
-        return {"type": "Error", "version": "1.0", "error": str(e)}
+        return {"type": "Error", "error": str(e)}
 
 
 def get_bus_kmb(
@@ -67,4 +67,4 @@ def get_bus_kmb(
     result = fetch_bus_routes(lang if lang else "en")
     if isinstance(result, dict) and result.get("type") == "Error":
         return result
-    return {"type": "RouteList", "version": "1.0", "data": result}
+    return {"type": "RouteList", "data": result}

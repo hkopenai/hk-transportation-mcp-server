@@ -110,9 +110,7 @@ class TestBusKMB(unittest.TestCase):
             self.assertTrue(isinstance(result, dict))
             result_dict = result if isinstance(result, dict) else {}
             type_val = result_dict.get("type", "")
-            version_val = result_dict.get("version", "")
             self.assertEqual(type_val, "Error")
-            self.assertEqual(version_val, "1.0")
             error_val = result_dict.get("error", "")
             self.assertTrue("Connection error" in error_val)
 
@@ -128,9 +126,7 @@ class TestBusKMB(unittest.TestCase):
             self.assertTrue(isinstance(result, dict))
             result_dict = result if isinstance(result, dict) else {}
             type_val = result_dict.get("type", "")
-            version_val = result_dict.get("version", "")
             self.assertEqual(type_val, "Error")
-            self.assertEqual(version_val, "1.0")
             error_val = result_dict.get("error", "")
             self.assertTrue("Invalid JSON" in error_val)
 

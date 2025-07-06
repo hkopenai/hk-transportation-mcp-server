@@ -140,9 +140,7 @@ class TestPassengerTraffic(unittest.TestCase):
             self.assertTrue(isinstance(result_start, dict))
             result_start_dict = result_start if isinstance(result_start, dict) else {}
             type_val_start = result_start_dict.get("type", "")
-            version_val_start = result_start_dict.get("version", "")
             self.assertEqual(type_val_start, "Error")
-            self.assertEqual(version_val_start, "1.0")
             error_val_start = result_start_dict.get("error", "")
             self.assertTrue("date format" in error_val_start.lower() or "invalid" in error_val_start.lower())
 
@@ -150,9 +148,7 @@ class TestPassengerTraffic(unittest.TestCase):
             self.assertTrue(isinstance(result_end, dict))
             result_end_dict = result_end if isinstance(result_end, dict) else {}
             type_val_end = result_end_dict.get("type", "")
-            version_val_end = result_end_dict.get("version", "")
             self.assertEqual(type_val_end, "Error")
-            self.assertEqual(version_val_end, "1.0")
             error_val_end = result_end_dict.get("error", "")
             self.assertTrue("date format" in error_val_end.lower() or "invalid" in error_val_end.lower())
 
@@ -182,9 +178,7 @@ class TestPassengerTraffic(unittest.TestCase):
             self.assertTrue(isinstance(result, dict))
             result_dict = result if isinstance(result, dict) else {}
             type_val = result_dict.get("type", "")
-            version_val = result_dict.get("version", "")
             self.assertEqual(type_val, "Error")
-            self.assertEqual(version_val, "1.0")
             error_val = result_dict.get("error", "")
             self.assertTrue("Connection error" in error_val)
 
@@ -203,9 +197,7 @@ class TestPassengerTraffic(unittest.TestCase):
             self.assertTrue(isinstance(result, dict))
             result_dict = result if isinstance(result, dict) else {}
             type_val = result_dict.get("type", "")
-            version_val = result_dict.get("version", "")
             self.assertEqual(type_val, "Error")
-            self.assertEqual(version_val, "1.0")
             error_val = result_dict.get("error", "")
             self.assertTrue("ValueError" in error_val or "malformed" in error_val.lower())
 

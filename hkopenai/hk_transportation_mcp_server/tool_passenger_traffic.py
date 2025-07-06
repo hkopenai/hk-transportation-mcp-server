@@ -74,12 +74,12 @@ def fetch_passenger_traffic_data(
             try:
                 start_dt = datetime.strptime(start_date, "%d-%m-%Y")
             except ValueError:
-                return {"type": "Error", "version": "1.0", "error": "Invalid date format for start_date. Use DD-MM-YYYY"}
+                return {"type": "Error", "error": "Invalid date format for start_date. Use DD-MM-YYYY"}
         if end_date:
             try:
                 end_dt = datetime.strptime(end_date, "%d-%m-%Y")
             except ValueError:
-                return {"type": "Error", "version": "1.0", "error": "Invalid date format for end_date. Use DD-MM-YYYY"}
+                return {"type": "Error", "error": "Invalid date format for end_date. Use DD-MM-YYYY"}
 
         filtered_data = []
         for item in all_data:
@@ -96,9 +96,9 @@ def fetch_passenger_traffic_data(
         results = [item["data"] for item in filtered_data]
         return results
     except ValueError as e:
-        return {"type": "Error", "version": "1.0", "error": f"ValueError: Malformed data - {str(e)}"}
+        return {"type": "Error", "error": f"ValueError: Malformed data - {str(e)}"}
     except Exception as e:
-        return {"type": "Error", "version": "1.0", "error": f"Connection error: {str(e)}"}
+        return {"type": "Error", "error": f"Connection error: {str(e)}"}
 
 
 def get_passenger_stats(
@@ -108,4 +108,4 @@ def get_passenger_stats(
     result = fetch_passenger_traffic_data(start_date, end_date)
     if isinstance(result, dict) and result.get("type") == "Error":
         return result
-    return {"type": "PassengerStats", "version": "1.0", "data": result}
+    return {"type": "PassengerStats", "data": result}

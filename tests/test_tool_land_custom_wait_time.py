@@ -61,9 +61,7 @@ class TestLandCustomWaitTimeTool(unittest.TestCase):
         self.assertTrue(isinstance(result, dict))
         result_dict = result if isinstance(result, dict) else {}
         type_val = result_dict["type"] if "type" in result_dict else ""
-        version_val = result_dict["version"] if "version" in result_dict else ""
         self.assertEqual(type_val, "WaitTimes")
-        self.assertEqual(version_val, "1.0")
         data = result_dict["data"] if "data" in result_dict else {}
         self.assertTrue(isinstance(data, dict))
         data_dict = data if isinstance(data, dict) else {}
@@ -105,9 +103,7 @@ class TestLandCustomWaitTimeTool(unittest.TestCase):
         self.assertTrue(isinstance(result, dict))
         result_dict = result if isinstance(result, dict) else {}
         type_val = result_dict["type"] if "type" in result_dict else ""
-        version_val = result_dict["version"] if "version" in result_dict else ""
         self.assertEqual(type_val, "WaitTimes")
-        self.assertEqual(version_val, "1.0")
         data = result_dict["data"] if "data" in result_dict else {}
         self.assertTrue(isinstance(data, dict))
         data_dict = data if isinstance(data, dict) else {}
@@ -144,9 +140,7 @@ class TestLandCustomWaitTimeTool(unittest.TestCase):
         self.assertTrue(isinstance(result, dict))
         result_dict = result if isinstance(result, dict) else {}
         type_val = result_dict["type"] if "type" in result_dict else ""
-        version_val = result_dict["version"] if "version" in result_dict else ""
         self.assertEqual(type_val, "WaitTimes")
-        self.assertEqual(version_val, "1.0")
         data = result_dict["data"] if "data" in result_dict else {}
         self.assertTrue(isinstance(data, dict))
         data_dict = data if isinstance(data, dict) else {}
@@ -180,9 +174,7 @@ class TestLandCustomWaitTimeTool(unittest.TestCase):
         self.assertTrue(isinstance(result, dict))
         result_dict = result if isinstance(result, dict) else {}
         type_val = result_dict["type"] if "type" in result_dict else ""
-        version_val = result_dict["version"] if "version" in result_dict else ""
         self.assertEqual(type_val, "WaitTimes")
-        self.assertEqual(version_val, "1.0")
         data = result_dict["data"] if "data" in result_dict else {}
         self.assertTrue(isinstance(data, dict))
         data_dict = data if isinstance(data, dict) else {}
@@ -212,7 +204,6 @@ class TestLandCustomWaitTimeTool(unittest.TestCase):
 
         # Check if the result is an error JSON
         self.assertEqual("type" in result and result["type"] or "", "Error")
-        self.assertEqual("version" in result and result["version"] or "", "1.0")
         self.assertTrue("error" in result and "Connection error" in result["error"] or False)
 
     @patch("requests.get")
@@ -233,7 +224,6 @@ class TestLandCustomWaitTimeTool(unittest.TestCase):
 
         # Check if the result is an error JSON
         self.assertEqual("type" in result and result["type"] or "", "Error")
-        self.assertEqual("version" in result and result["version"] or "", "1.0")
         self.assertTrue("error" in result and "Invalid JSON" in result["error"] or False)
 
     @patch("requests.get")
@@ -256,9 +246,7 @@ class TestLandCustomWaitTimeTool(unittest.TestCase):
         self.assertTrue(isinstance(result, dict))
         result_dict = result if isinstance(result, dict) else {}
         type_val = result_dict["type"] if "type" in result_dict else ""
-        version_val = result_dict["version"] if "version" in result_dict else ""
         self.assertEqual(type_val, "WaitTimes")
-        self.assertEqual(version_val, "1.0")
         data = result_dict["data"] if "data" in result_dict else {}
         self.assertTrue(isinstance(data, dict))
         data_dict = data if isinstance(data, dict) else {}

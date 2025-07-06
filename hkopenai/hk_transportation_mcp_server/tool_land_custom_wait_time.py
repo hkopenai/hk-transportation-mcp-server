@@ -64,9 +64,9 @@ class LandCustomWaitTimeTool(Tool):
             data = response.json()
 
             result = self.format_wait_times(data, lang)
-            return {"type": "WaitTimes", "version": "1.0", "data": result}
+            return {"type": "WaitTimes", "data": result}
         except Exception as e:
-            return {"type": "Error", "version": "1.0", "error": str(e)}
+            return {"type": "Error", "error": str(e)}
 
     def format_wait_times(self, data, lang):
         """
