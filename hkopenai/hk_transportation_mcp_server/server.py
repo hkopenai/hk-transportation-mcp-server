@@ -1,5 +1,5 @@
 """
-HKO MCP Server module for transportation data in Hong Kong.
+MCP Server module for transportation data in Hong Kong.
 
 This module provides the main server setup for the HK OpenAI Transportation MCP Server,
 including tools for fetching passenger statistics, bus routes, and land boundary wait times.
@@ -66,12 +66,12 @@ def create_mcp_server():
 
 def main():
     """
-    Main function to start the HKO MCP Server.
+    Main function to start the MCP Server.
     
     Parses command line arguments to determine the mode of operation (SSE or stdio)
     and starts the server accordingly.
     """
-    parser = argparse.ArgumentParser(description="HKO MCP Server")
+    parser = argparse.ArgumentParser(description="MCP Server")
     parser.add_argument(
         "-s", "--sse", action="store_true", help="Run in SSE mode instead of stdio"
     )
