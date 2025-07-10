@@ -17,7 +17,7 @@ email = "neo@01man.com"
 
 [tool.setuptools]
 packages = [ "hkopenai.hk_transportation_mcp_server",]
-include-package-data = false
+include-package-data = true
 
 [tool.bandit]
 exclude_dirs = [ "venv", ".venv", "tests",]

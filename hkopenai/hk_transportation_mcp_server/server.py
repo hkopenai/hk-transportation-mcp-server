@@ -64,28 +64,18 @@ def create_mcp_server():
     return mcp
 
 
-def main():
+def main(args):
     """
     Main function to start the MCP Server.
     
-    Parses command line arguments to determine the mode of operation (SSE or stdio)
-    and starts the server accordingly.
+    Args:
+        args: Command line arguments passed to the function.
     """
-    parser = argparse.ArgumentParser(description="MCP Server")
-    parser.add_argument(
-        "-s", "--sse", action="store_true", help="Run in SSE mode instead of stdio"
-    )
-    parser.add_argument(
-        "--host", type=str, default="127.0.0.1", help="Host to bind the server to"
-    )
-   
-    args = parser.parse_args()
-
     server = create_mcp_server()
 
     if args.sse:
-        server.run(transport="streamable-http", host=args.host)
-        print(f"HK Transportation MCP Server running in SSE mode on port 8000, bound to {args.host}") 
+        server.run(transport="streamable-http", host=args.host, port=args.port)
+        print(f"HK Transportation MCP Server running in SSE mode on port {args.port}, bound to {args.host}") 
     else:
         server.run()
         print("HK Transportation MCP Server running in stdio mode")
