@@ -7,8 +7,25 @@ from the Hong Kong Immigration Department, including breakdowns by resident type
 
 import csv
 import urllib.request
-from typing import List, Dict, Optional, Union
+from typing import List, Dict, Optional, Union, Annotated
 from datetime import datetime, timedelta
+from pydantic import Field
+
+
+def register(mcp):
+    @mcp.tool(
+        description="The statistics on daily passenger traffic provides figures concerning daily statistics on inbound and outbound passenger trips at all control points since 2021 (with breakdown by Hong Kong Residents, Mainland Visitors and Other Visitors). Return last 7 days data if no date range is specified."
+    )
+    def get_passenger_stats(
+        start_date: Annotated[
+            Optional[str], Field(description="Start date in DD-MM-YYYY format")
+        ] = None,
+        end_date: Annotated[
+            Optional[str], Field(description="End date in DD-MM-YYYY format")
+        ] = None,
+    ) -> Dict:
+        """Get passenger traffic statistics."""
+        return _get_passenger_stats(start_date, end_date)
 
 
 def get_current_date() -> datetime:
@@ -74,12 +91,18 @@ def fetch_passenger_traffic_data(
             try:
                 start_dt = datetime.strptime(start_date, "%d-%m-%Y")
             except ValueError:
-                return {"type": "Error", "error": "Invalid date format for start_date. Use DD-MM-YYYY"}
+                return {
+                    "type": "Error",
+                    "error": "Invalid date format for start_date. Use DD-MM-YYYY",
+                }
         if end_date:
             try:
                 end_dt = datetime.strptime(end_date, "%d-%m-%Y")
             except ValueError:
-                return {"type": "Error", "error": "Invalid date format for end_date. Use DD-MM-YYYY"}
+                return {
+                    "type": "Error",
+                    "error": "Invalid date format for end_date. Use DD-MM-YYYY",
+                }
 
         filtered_data = []
         for item in all_data:
@@ -101,7 +124,7 @@ def fetch_passenger_traffic_data(
         return {"type": "Error", "error": f"Connection error: {str(e)}"}
 
 
-def get_passenger_stats(
+def _get_passenger_stats(
     start_date: Optional[str] = None, end_date: Optional[str] = None
 ) -> Dict:
     """Get passenger traffic statistics"""

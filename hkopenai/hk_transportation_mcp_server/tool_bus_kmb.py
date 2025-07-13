@@ -13,6 +13,22 @@ from pydantic import Field
 from typing_extensions import Annotated
 
 
+def register(mcp):
+    @mcp.tool(
+        description="All bus routes of Kowloon Motor Bus (KMB) and Long Win Bus Services Hong Kong. Data source: Kowloon Motor Bus and Long Win Bus Services"
+    )
+    def get_bus_kmb(
+        lang: Annotated[
+            Optional[str],
+            Field(
+                description="Language (en/tc/sc) English, Traditional Chinese, Simplified Chinese. Default English",
+                json_schema_extra={"enum": ["en", "tc", "sc"]},
+            ),
+        ] = "en",
+    ) -> Dict:
+        return _get_bus_kmb(lang)
+
+
 def fetch_bus_routes(lang: str = "en") -> Union[List[Dict], Dict]:
     """Fetch all KMB/LWB bus routes from the API
 
@@ -54,7 +70,7 @@ def fetch_bus_routes(lang: str = "en") -> Union[List[Dict], Dict]:
         return {"type": "Error", "error": str(e)}
 
 
-def get_bus_kmb(
+def _get_bus_kmb(
     lang: Annotated[
         Optional[str],
         Field(
