@@ -7,6 +7,7 @@ from pydantic import Field
 
 def register(mcp):
     """Register the get_land_boundary_wait_times tool with the MCP server."""
+
     @mcp.tool(
         description="Fetch current waiting times at land boundary control points in Hong Kong."
     )

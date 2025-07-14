@@ -5,9 +5,6 @@ This module serves as the starting point for running the server, invoking the ma
 from the server module to initialize and start the MCP server.
 """
 
-
-
-
 from hkopenai_common.cli_utils import cli_main
 from .server import server
 
