@@ -21,7 +21,7 @@ def register(mcp):
         ] = "en",
     ) -> Dict:
         """Get current waiting times at land boundary control points in Hong Kong."""
-        return _fetch_wait_times(lang)
+        return _fetch_wait_times(str(lang))
 
 
 def _fetch_wait_times(lang: str) -> Dict:
