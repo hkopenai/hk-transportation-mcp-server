@@ -85,10 +85,11 @@ class TestLandCustomWaitTimeTool(unittest.TestCase):
 
     def test_invalid_language_code(self):
         """Test handling of invalid language codes."""
-        with patch("requests.get"):
+        with patch("requests.get") as mock_get:
             mock_response = MagicMock()
             mock_response.json.return_value = {"HYW": {"arrQueue": 0, "depQueue": 0}}
-            patch("requests.get").return_value = mock_response
+            mock_get.return_value = mock_response
+            _ = mock_get # Added to satisfy pylint W0612
 
             result = _fetch_wait_times("xx")
 
