@@ -14,6 +14,7 @@ from typing_extensions import Annotated
 
 
 def register(mcp):
+    """Registers the get_bus_kmb tool with the MCP server."""
     @mcp.tool(
         description="All bus routes of Kowloon Motor Bus (KMB) and Long Win Bus Services Hong Kong. Data source: Kowloon Motor Bus and Long Win Bus Services"
     )

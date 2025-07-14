@@ -1,7 +1,7 @@
 """Tool for fetching Land Boundary Control Points Waiting Time in Hong Kong."""
 
-import requests
 from typing import Dict, Annotated, Optional
+import requests
 from pydantic import Field
 
 

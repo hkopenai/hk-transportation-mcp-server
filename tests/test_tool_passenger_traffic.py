@@ -6,12 +6,12 @@ ensuring correct handling of date filters and error conditions.
 """
 
 import unittest
+from datetime import datetime
 from unittest.mock import patch, mock_open, MagicMock
 from hkopenai.hk_transportation_mcp_server.tool_passenger_traffic import (
     _get_passenger_stats,
     register,
 )
-from datetime import datetime, timedelta
 
 
 class TestPassengerTraffic(unittest.TestCase):
@@ -208,6 +208,7 @@ class TestPassengerTraffic(unittest.TestCase):
             )
 
     def test_register_tool(self):
+        """Test the registration of the tool with MCP server."""
         mock_mcp = MagicMock()
         register(mock_mcp)
         mock_mcp.tool.assert_called_once_with(

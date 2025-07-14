@@ -1,3 +1,4 @@
+"""Tests for the Land Boundary Control Points Waiting Time tool."""
 import unittest
 from unittest.mock import patch, MagicMock
 from hkopenai.hk_transportation_mcp_server.tool_land_custom_wait_time import (
@@ -7,7 +8,9 @@ from hkopenai.hk_transportation_mcp_server.tool_land_custom_wait_time import (
 
 
 class TestLandCustomWaitTimeTool(unittest.TestCase):
+    """Tests for the land boundary control points waiting time tool."""
     def test_fetch_wait_times_en_language(self):
+        """Test fetching wait times with English language."""
         with patch("requests.get") as mock_get:
             mock_response = MagicMock()
             mock_response.json.return_value = {
@@ -39,6 +42,7 @@ class TestLandCustomWaitTimeTool(unittest.TestCase):
             self.assertEqual(stk["arrival"], "Non Service Hours")
 
     def test_fetch_wait_times_tc_language(self):
+        """Test fetching wait times with Traditional Chinese language."""
         with patch("requests.get") as mock_get:
             mock_response = MagicMock()
             mock_response.json.return_value = {
@@ -59,6 +63,7 @@ class TestLandCustomWaitTimeTool(unittest.TestCase):
             self.assertEqual(hyw["arrival"], "Normal (Generally less than 15 mins)")
 
     def test_fetch_wait_times_sc_language(self):
+        """Test fetching wait times with Simplified Chinese language."""
         with patch("requests.get") as mock_get:
             mock_response = MagicMock()
             mock_response.json.return_value = {
@@ -79,10 +84,11 @@ class TestLandCustomWaitTimeTool(unittest.TestCase):
             self.assertEqual(hyw["arrival"], "Normal (Generally less than 15 mins)")
 
     def test_invalid_language_code(self):
-        with patch("requests.get") as mock_get:
+        """Test handling of invalid language codes."""
+        with patch("requests.get"):
             mock_response = MagicMock()
             mock_response.json.return_value = {"HYW": {"arrQueue": 0, "depQueue": 0}}
-            mock_get.return_value = mock_response
+            patch("requests.get").return_value = mock_response
 
             result = _fetch_wait_times("xx")
 
@@ -96,6 +102,7 @@ class TestLandCustomWaitTimeTool(unittest.TestCase):
             self.assertEqual(hyw["arrival"], "Normal (Generally less than 15 mins)")
 
     def test_api_unavailable(self):
+        """Test behavior when the API is unavailable."""
         with patch(
             "requests.get", side_effect=Exception("Connection error")
         ) as mock_get:
@@ -104,6 +111,7 @@ class TestLandCustomWaitTimeTool(unittest.TestCase):
             self.assertTrue("Connection error" in result["error"])
 
     def test_invalid_json_response(self):
+        """Test handling of invalid JSON responses from the API."""
         with patch("requests.get") as mock_get:
             mock_response = MagicMock()
             mock_response.json.side_effect = ValueError("Invalid JSON")
@@ -114,6 +122,7 @@ class TestLandCustomWaitTimeTool(unittest.TestCase):
             self.assertTrue("Invalid JSON" in result["error"])
 
     def test_empty_data_response(self):
+        """Test handling of empty data responses from the API."""
         with patch("requests.get") as mock_get:
             mock_response = MagicMock()
             mock_response.json.return_value = {}
@@ -129,6 +138,7 @@ class TestLandCustomWaitTimeTool(unittest.TestCase):
             self.assertEqual(hyw["arrival"], "Data not available")
 
     def test_register_tool(self):
+        """Test the registration of the tool with MCP server."""
         mock_mcp = MagicMock()
         register(mock_mcp)
         mock_mcp.tool.assert_called_once_with(

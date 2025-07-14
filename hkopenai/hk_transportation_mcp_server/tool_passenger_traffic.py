@@ -13,6 +13,7 @@ from pydantic import Field
 
 
 def register(mcp):
+    """Registers the get_passenger_stats tool with the MCP server."""
     @mcp.tool(
         description="The statistics on daily passenger traffic provides figures concerning daily statistics on inbound and outbound passenger trips at all control points since 2021 (with breakdown by Hong Kong Residents, Mainland Visitors and Other Visitors). Return last 7 days data if no date range is specified."
     )
