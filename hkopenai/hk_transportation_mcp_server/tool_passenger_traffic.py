@@ -5,11 +5,10 @@ This module provides functionality to retrieve and process daily passenger traff
 from the Hong Kong Immigration Department, including breakdowns by resident type and date range.
 """
 
-import csv
-import urllib.request
 from typing import List, Dict, Optional, Union, Annotated
 from datetime import datetime, timedelta
 from pydantic import Field
+from hkopenai_common.csv_utils import fetch_csv_from_url
 
 
 def register(mcp):
@@ -37,7 +36,8 @@ def get_current_date() -> datetime:
 def fetch_passenger_traffic_data(
     start_date: Optional[str] = None, end_date: Optional[str] = None
 ) -> Union[List[Dict], Dict]:
-    """Fetch and parse passenger traffic data from Immigration Department
+    """
+    Fetch and parse passenger traffic data from Immigration Department
 
     Args:
         start_date: Optional start date in DD-MM-YYYY format
@@ -48,81 +48,75 @@ def fetch_passenger_traffic_data(
         hk_residents, mainland_visitors, other_visitors, total, or a dictionary
         containing error information.
     """
-    try:
-        url = "https://www.immd.gov.hk/opendata/eng/transport/immigration_clearance/statistics_on_daily_passenger_traffic.csv"
-        response = urllib.request.urlopen(url)
-        lines = [
-            l.decode("utf-8-sig") for l in response.readlines()
-        ]  # Use utf-8-sig to handle BOM
-        reader = csv.DictReader(lines)
+    url = "https://www.immd.gov.hk/opendata/eng/transport/immigration_clearance/statistics_on_daily_passenger_traffic.csv"
+    data = fetch_csv_from_url(url, encoding="utf-8-sig")
 
-        # Get last 7 days if no dates specified (including today)
-        if not start_date and not end_date:
-            end_date = get_current_date().strftime("%d-%m-%Y")
-            start_date = (get_current_date() - timedelta(days=6)).strftime("%d-%m-%Y")
+    if "error" in data:
+        return {"type": "Error", "error": data["error"]}
 
-        # Read all data first
-        all_data = []
-        for row in reader:
-            # Handle both 'Date' and '\ufeffDate' from BOM
-            date_key = "Date" if "Date" in row else "\ufeffDate"
-            if date_key not in row:
-                continue
-            current_date = row[date_key]
-            current_dt = datetime.strptime(current_date, "%d-%m-%Y")
-            all_data.append(
-                {
-                    "dt": current_dt,
-                    "data": {
-                        "date": current_date,
-                        "control_point": row["Control Point"],
-                        "direction": row["Arrival / Departure"],
-                        "hk_residents": int(row["Hong Kong Residents"]),
-                        "mainland_visitors": int(row["Mainland Visitors"]),
-                        "other_visitors": int(row["Other Visitors"]),
-                        "total": int(row["Total"]),
-                    },
-                }
-            )
+    # Get last 7 days if no dates specified (including today)
+    if not start_date and not end_date:
+        end_date = get_current_date().strftime("%d-%m-%Y")
+        start_date = (get_current_date() - timedelta(days=6)).strftime("%d-%m-%Y")
 
-        # Filter by date range
-        start_dt = None
-        end_dt = None
-        if start_date:
-            try:
-                start_dt = datetime.strptime(start_date, "%d-%m-%Y")
-            except ValueError:
-                return {
-                    "type": "Error",
-                    "error": "Invalid date format for start_date. Use DD-MM-YYYY",
-                }
-        if end_date:
-            try:
-                end_dt = datetime.strptime(end_date, "%d-%m-%Y")
-            except ValueError:
-                return {
-                    "type": "Error",
-                    "error": "Invalid date format for end_date. Use DD-MM-YYYY",
-                }
+    # Read all data first
+    all_data = []
+    for row in data:
+        # Handle both 'Date' and '\ufeffDate' from BOM
+        date_key = "Date" if "Date" in row else "\ufeffDate"
+        if date_key not in row:
+            continue
+        current_date = row[date_key]
+        current_dt = datetime.strptime(current_date, "%d-%m-%Y")
+        all_data.append(
+            {
+                "dt": current_dt,
+                "data": {
+                    "date": current_date,
+                    "control_point": row["Control Point"],
+                    "direction": row["Arrival / Departure"],
+                    "hk_residents": int(row["Hong Kong Residents"]),
+                    "mainland_visitors": int(row["Mainland Visitors"]),
+                    "other_visitors": int(row["Other Visitors"]),
+                    "total": int(row["Total"]),
+                },
+            }
+        )
 
-        filtered_data = []
-        for item in all_data:
-            if start_dt and item["dt"] < start_dt:
-                continue
-            if end_dt and item["dt"] > end_dt:
-                continue
-            filtered_data.append(item)
+    # Filter by date range
+    start_dt = None
+    end_dt = None
+    if start_date:
+        try:
+            start_dt = datetime.strptime(start_date, "%d-%m-%Y")
+        except ValueError:
+            return {
+                "type": "Error",
+                "error": "Invalid date format for start_date. Use DD-MM-YYYY",
+            }
+    if end_date:
+        try:
+            end_dt = datetime.strptime(end_date, "%d-%m-%Y")
+        except ValueError:
+            return {
+                "type": "Error",
+                "error": "Invalid date format for end_date. Use DD-MM-YYYY",
+            }
 
-        # Sort by date (newest first)
-        filtered_data.sort(key=lambda x: x["dt"], reverse=True)
+    filtered_data = []
+    for item in all_data:
+        if start_dt and item["dt"] < start_dt:
+            continue
+        if end_dt and item["dt"] > end_dt:
+            continue
+        filtered_data.append(item)
 
-        # Extract just the data dictionaries
-        results = [item["data"] for item in filtered_data]
-        return results
-    except ValueError as e:
-        return {"type": "Error", "error": f"ValueError: Malformed data - {str(e)}"}
-    except Exception as e:
-        return {"type": "Error", "error": f"Connection error: {str(e)}"}
+    # Sort by date (newest first)
+    filtered_data.sort(key=lambda x: x["dt"], reverse=True)
+
+    # Extract just the data dictionaries
+    results = [item["data"] for item in filtered_data]
+    return results
 
 
 def _get_passenger_stats(

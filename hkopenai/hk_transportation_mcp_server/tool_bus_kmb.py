@@ -5,12 +5,10 @@ This module provides functionality to retrieve and format bus route information 
 supporting multiple languages for user accessibility.
 """
 
-import json
-import urllib.request
-import urllib.error
 from typing import Dict, List, Optional, Union
 from pydantic import Field
 from typing_extensions import Annotated
+from hkopenai_common.json_utils import fetch_json_data
 
 
 def register(mcp):
@@ -39,36 +37,31 @@ def fetch_bus_routes(lang: str = "en") -> Union[List[Dict], Dict]:
     Returns:
         List of route dictionaries with route details or a dictionary with error information
     """
-    try:
-        url = "https://data.etabus.gov.hk/v1/transport/kmb/route/"
-        response = urllib.request.urlopen(url)
-        data = json.loads(response.read().decode("utf-8"))
+    url = "https://data.etabus.gov.hk/v1/transport/kmb/route/"
+    data = fetch_json_data(url)
 
-        # Validate language code, default to 'en' if invalid
-        valid_langs = ["en", "tc", "sc"]
-        if lang not in valid_langs:
-            lang = "en"
+    if "error" in data:
+        return {"type": "Error", "error": data["error"]}
 
-        # Filter fields based on language
-        filtered_routes = []
-        for route in data["data"]:
-            filtered_routes.append(
-                {
-                    "route": route["route"],
-                    "bound": "outbound" if route["bound"] == "O" else "inbound",
-                    "service_type": route["service_type"],
-                    "origin": route[f"orig_{lang}"],
-                    "destination": route[f"dest_{lang}"],
-                }
-            )
+    # Validate language code, default to 'en' if invalid
+    valid_langs = ["en", "tc", "sc"]
+    if lang not in valid_langs:
+        lang = "en"
 
-        return filtered_routes
-    except urllib.error.URLError as e:
-        return {"type": "Error", "error": f"Connection error: {str(e)}"}
-    except json.JSONDecodeError as e:
-        return {"type": "Error", "error": f"Invalid JSON response: {str(e)}"}
-    except Exception as e:
-        return {"type": "Error", "error": str(e)}
+    # Filter fields based on language
+    filtered_routes = []
+    for route in data["data"]:
+        filtered_routes.append(
+            {
+                "route": route["route"],
+                "bound": "outbound" if route["bound"] == "O" else "inbound",
+                "service_type": route["service_type"],
+                "origin": route[f"orig_{lang}"],
+                "destination": route[f"dest_{lang}"],
+            }
+        )
+
+    return filtered_routes
 
 
 def _get_bus_kmb(

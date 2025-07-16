@@ -1,8 +1,8 @@
 """Tool for fetching Land Boundary Control Points Waiting Time in Hong Kong."""
 
 from typing import Dict, Annotated, Optional
-import requests
 from pydantic import Field
+from hkopenai_common.json_utils import fetch_json_data
 
 
 def register(mcp):
@@ -43,39 +43,37 @@ def _fetch_wait_times(lang: str) -> Dict:
         4: "System Under Maintenance",
         99: "Non Service Hours",
     }
-    try:
-        url = "https://secure1.info.gov.hk/immd/mobileapps/2bb9ae17/data/CPQueueTimeR.json"
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        data = response.json()
+    url = "https://secure1.info.gov.hk/immd/mobileapps/2bb9ae17/data/CPQueueTimeR.json"
+    data = fetch_json_data(url, timeout=10)
 
-        wait_times = []
-        for code, name in control_points.items():
-            if code in data:
-                arr_status = data[code].get("arrQueue", 99)
-                dep_status = data[code].get("depQueue", 99)
-                arr_desc = status_codes.get(arr_status, "Unknown")
-                dep_desc = status_codes.get(dep_status, "Unknown")
-                wait_times.append(
-                    {
-                        "name": name,
-                        "code": code,
-                        "arrival": arr_desc,
-                        "departure": dep_desc,
-                    }
-                )
-            else:
-                wait_times.append(
-                    {
-                        "name": name,
-                        "code": code,
-                        "arrival": "Data not available",
-                        "departure": "Data not available",
-                    }
-                )
-        return {
-            "type": "WaitTimes",
-            "data": {"language": lang.upper(), "control_points": wait_times},
-        }
-    except Exception as e:
-        return {"type": "Error", "error": str(e)}
+    if "error" in data:
+        return {"type": "Error", "error": data["error"]}
+
+    wait_times = []
+    for code, name in control_points.items():
+        if code in data:
+            arr_status = data[code].get("arrQueue", 99)
+            dep_status = data[code].get("depQueue", 99)
+            arr_desc = status_codes.get(arr_status, "Unknown")
+            dep_desc = status_codes.get(dep_status, "Unknown")
+            wait_times.append(
+                {
+                    "name": name,
+                    "code": code,
+                    "arrival": arr_desc,
+                    "departure": dep_desc,
+                }
+            )
+        else:
+            wait_times.append(
+                {
+                    "name": name,
+                    "code": code,
+                    "arrival": "Data not available",
+                    "departure": "Data not available",
+                }
+            )
+    return {
+        "type": "WaitTimes",
+        "data": {"language": lang.upper(), "control_points": wait_times},
+    }
