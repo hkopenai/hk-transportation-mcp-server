@@ -8,7 +8,7 @@ ensuring correct handling of date filters and error conditions.
 import unittest
 from datetime import datetime
 from unittest.mock import patch, mock_open, MagicMock
-from hkopenai.hk_transportation_mcp_server.tool_passenger_traffic import (
+from hkopenai.hk_transportation_mcp_server.tools.passenger_traffic import (
     _get_passenger_stats,
     register,
 )
@@ -48,30 +48,24 @@ class TestPassengerTraffic(unittest.TestCase):
         This method sets up mocks for the urllib.request.urlopen function and the get_current_date
         function to simulate API responses and control the date used in tests.
         """
-        self.mock_urlopen = patch("urllib.request.urlopen").start()
-        self.mock_urlopen.return_value = mock_open(
-            read_data=self.CSV_DATA.encode("utf-8")
-        )()
-
-        # Mock get_current_date() to return fixed date matching test data
-        self.mock_date = patch(
-            "hkopenai.hk_transportation_mcp_server.tool_passenger_traffic.get_current_date"
+        self.mock_datetime_now = patch(
+            "hkopenai.hk_transportation_mcp_server.tools.passenger_traffic.datetime"
         ).start()
-        self.mock_date.return_value = datetime(
+        self.mock_datetime_now.return_value = datetime(
             2021, 1, 8
         )  # Matches latest date in test data
 
         self.addCleanup(patch.stopall)
 
-    @patch("urllib.request.urlopen")
-    def test_get_passenger_stats_default_lang(self, mock_urlopen):
+    @patch("hkopenai_common.csv_utils.fetch_csv_from_url")
+    def test_get_passenger_stats_default_lang(self, mock_fetch_csv_from_url):
         """
         Test fetching passenger traffic data with default parameters (last 7 days).
 
         Args:
-            mock_urlopen: Mock object for the urllib.request.urlopen function to simulate API responses.
+            mock_fetch_csv_from_url: Mock object for the fetch_csv_from_url function to simulate API responses.
         """
-        mock_urlopen.return_value = mock_open(read_data=self.CSV_DATA.encode("utf-8"))()
+        mock_fetch_csv_from_url.return_value = [dict(zip(self.CSV_DATA.splitlines()[0].split(','), row.split(','))) for row in self.CSV_DATA.splitlines()[1:]]
 
         result = _get_passenger_stats()
 
@@ -177,7 +171,7 @@ class TestPassengerTraffic(unittest.TestCase):
         """
         Test handling of API unavailability by simulating a connection error.
         """
-        with patch("urllib.request.urlopen", side_effect=Exception("Connection error")):
+        with patch("hkopenai_common.csv_utils.fetch_csv_from_url", return_value={"error": "Connection error"}):
             result = _get_passenger_stats()
             self.assertTrue(isinstance(result, dict))
             result_dict = result if isinstance(result, dict) else {}
@@ -193,10 +187,7 @@ class TestPassengerTraffic(unittest.TestCase):
         malformed_data = """\ufeffDate,Control Point,Arrival / Departure,Hong Kong Residents,Mainland Visitors,Other Visitors,Total
 01-01-2021,Airport,Arrival,invalid,0,9,350
 """
-        with patch(
-            "urllib.request.urlopen",
-            return_value=mock_open(read_data=malformed_data.encode("utf-8"))(),
-        ):
+        with patch("hkopenai_common.csv_utils.fetch_csv_from_url", return_value=[dict(zip(malformed_data.splitlines()[0].split(','), row.split(','))) for row in malformed_data.splitlines()[1:]]):
             result = _get_passenger_stats()
             self.assertTrue(isinstance(result, dict))
             result_dict = result if isinstance(result, dict) else {}
@@ -219,7 +210,7 @@ class TestPassengerTraffic(unittest.TestCase):
         decorated_function = mock_decorator.call_args[0][0]
         self.assertEqual(decorated_function.__name__, "get_passenger_stats")
         with patch(
-            "hkopenai.hk_transportation_mcp_server.tool_passenger_traffic._get_passenger_stats"
+            "hkopenai.hk_transportation_mcp_server.tools.passenger_traffic._get_passenger_stats"
         ) as mock_get_passenger_stats:
             decorated_function(start_date="01-01-2023", end_date="31-01-2023")
             mock_get_passenger_stats.assert_called_once_with("01-01-2023", "31-01-2023")

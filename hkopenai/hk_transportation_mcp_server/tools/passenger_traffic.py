@@ -13,6 +13,7 @@ from hkopenai_common.csv_utils import fetch_csv_from_url
 
 def register(mcp):
     """Registers the get_passenger_stats tool with the MCP server."""
+
     @mcp.tool(
         description="The statistics on daily passenger traffic provides figures concerning daily statistics on inbound and outbound passenger trips at all control points since 2021 (with breakdown by Hong Kong Residents, Mainland Visitors and Other Visitors). Return last 7 days data if no date range is specified."
     )
@@ -28,26 +29,13 @@ def register(mcp):
         return _get_passenger_stats(start_date, end_date)
 
 
-def get_current_date() -> datetime:
-    """Wrapper for datetime.now() to allow mocking in tests"""
-    return datetime.now()
 
 
-def fetch_passenger_traffic_data(
+
+def _get_passenger_stats(
     start_date: Optional[str] = None, end_date: Optional[str] = None
-) -> Union[List[Dict], Dict]:
-    """
-    Fetch and parse passenger traffic data from Immigration Department
-
-    Args:
-        start_date: Optional start date in DD-MM-YYYY format
-        end_date: Optional end date in DD-MM-YYYY format
-
-    Returns:
-        List of passenger traffic data with date, control_point, direction,
-        hk_residents, mainland_visitors, other_visitors, total, or a dictionary
-        containing error information.
-    """
+) -> Dict:
+    """Get passenger traffic statistics"""
     url = "https://www.immd.gov.hk/opendata/eng/transport/immigration_clearance/statistics_on_daily_passenger_traffic.csv"
     data = fetch_csv_from_url(url, encoding="utf-8-sig")
 
@@ -56,8 +44,8 @@ def fetch_passenger_traffic_data(
 
     # Get last 7 days if no dates specified (including today)
     if not start_date and not end_date:
-        end_date = get_current_date().strftime("%d-%m-%Y")
-        start_date = (get_current_date() - timedelta(days=6)).strftime("%d-%m-%Y")
+        end_date = datetime.now().strftime("%d-%m-%Y")
+        start_date = (datetime.now() - timedelta(days=6)).strftime("%d-%m-%Y")
 
     # Read all data first
     all_data = []
@@ -116,14 +104,5 @@ def fetch_passenger_traffic_data(
 
     # Extract just the data dictionaries
     results = [item["data"] for item in filtered_data]
-    return results
+    return {"type": "PassengerStats", "data": results}
 
-
-def _get_passenger_stats(
-    start_date: Optional[str] = None, end_date: Optional[str] = None
-) -> Dict:
-    """Get passenger traffic statistics"""
-    result = fetch_passenger_traffic_data(start_date, end_date)
-    if isinstance(result, dict) and result.get("type") == "Error":
-        return result
-    return {"type": "PassengerStats", "data": result}

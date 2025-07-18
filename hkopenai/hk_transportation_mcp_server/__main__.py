@@ -6,7 +6,7 @@ from the server module to initialize and start the MCP server.
 """
 
 from hkopenai_common.cli_utils import cli_main
-from . import server
+from .server import server
 
 if __name__ == "__main__":
-    cli_main(server.main, "HK Transportation MCP Server")
+    cli_main(server, "HK Transportation MCP Server")

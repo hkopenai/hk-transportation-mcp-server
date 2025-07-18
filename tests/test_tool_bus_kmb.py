@@ -8,7 +8,7 @@ ensuring correct handling of language preferences and error conditions.
 import unittest
 from unittest.mock import patch, mock_open, MagicMock
 import json
-from hkopenai.hk_transportation_mcp_server.tool_bus_kmb import _get_bus_kmb, register
+from hkopenai.hk_transportation_mcp_server.tools.bus_kmb import _get_bus_kmb, register
 
 
 class TestBusKMB(unittest.TestCase):
@@ -56,10 +56,8 @@ class TestBusKMB(unittest.TestCase):
         This method sets up a mock for the urllib.request.urlopen function to simulate
         API responses for bus route data.
         """
-        self.mock_urlopen = patch("urllib.request.urlopen").start()
-        self.mock_urlopen.return_value = mock_open(
-            read_data=json.dumps(self.API_RESPONSE).encode("utf-8")
-        )()
+        self.mock_fetch_json_data = patch("hkopenai_common.json_utils.fetch_json_data").start()
+        self.mock_fetch_json_data.return_value = self.API_RESPONSE
         self.addCleanup(patch.stopall)
 
     def test_get_bus_kmb_default_lang(self):
@@ -119,10 +117,7 @@ class TestBusKMB(unittest.TestCase):
         """
         Test handling of invalid JSON response from the API.
         """
-        with patch(
-            "urllib.request.urlopen",
-            return_value=mock_open(read_data=b"Invalid JSON")(),
-        ):
+        with patch("hkopenai_common.json_utils.fetch_json_data", return_value={"error": "Invalid JSON"}):
             result = _get_bus_kmb()
             self.assertTrue(isinstance(result, dict))
             result_dict = result if isinstance(result, dict) else {}
@@ -141,12 +136,7 @@ class TestBusKMB(unittest.TestCase):
             "generated_timestamp": "2025-06-12T21:32:34+08:00",
             "data": [],
         }
-        with patch(
-            "urllib.request.urlopen",
-            return_value=mock_open(
-                read_data=json.dumps(empty_response).encode("utf-8")
-            )(),
-        ):
+        with patch("hkopenai_common.json_utils.fetch_json_data", return_value=empty_response):
             result = _get_bus_kmb()
             self.assertEqual(len(result["data"]), 0)
 
@@ -178,7 +168,7 @@ class TestBusKMB(unittest.TestCase):
 
         # Call the decorated function and verify it calls _get_bus_kmb
         with patch(
-            "hkopenai.hk_transportation_mcp_server.tool_bus_kmb._get_bus_kmb"
+            "hkopenai.hk_transportation_mcp_server.tools.bus_kmb._get_bus_kmb"
         ) as mock_get_bus_kmb:
             decorated_function(lang="en")
             mock_get_bus_kmb.assert_called_once_with("en")

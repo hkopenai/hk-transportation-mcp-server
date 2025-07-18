@@ -7,7 +7,7 @@ to ensure that the MCP server is properly initialized with the expected tools.
 
 import unittest
 from unittest.mock import patch, Mock
-from hkopenai.hk_transportation_mcp_server.server import create_mcp_server
+from hkopenai.hk_transportation_mcp_server.server import server
 
 
 class TestApp(unittest.TestCase):
@@ -19,9 +19,9 @@ class TestApp(unittest.TestCase):
     """
 
     @patch("hkopenai.hk_transportation_mcp_server.server.FastMCP")
-    @patch("hkopenai.hk_transportation_mcp_server.server.tool_passenger_traffic")
-    @patch("hkopenai.hk_transportation_mcp_server.server.tool_bus_kmb")
-    @patch("hkopenai.hk_transportation_mcp_server.server.tool_land_custom_wait_time")
+    @patch("hkopenai.hk_transportation_mcp_server.tools.passenger_traffic")
+    @patch("hkopenai.hk_transportation_mcp_server.tools.bus_kmb")
+    @patch("hkopenai.hk_transportation_mcp_server.tools.land_custom_wait_time")
     def test_create_mcp_server(
         self,
         mock_tool_land_custom_wait_time,
@@ -43,20 +43,19 @@ class TestApp(unittest.TestCase):
             mock_fastmcp: Mock for the FastMCP server class.
         """
         # Setup mocks
-        mock_server = Mock()
+        mock_mcp = Mock()
 
-        mock_fastmcp.return_value = mock_server
+        mock_fastmcp.return_value = mock_mcp
 
         # Test server creation
-        server = create_mcp_server()
+        server("localhost", 8000, False)
 
         # Verify server creation
         mock_fastmcp.assert_called_once()
-        self.assertEqual(server, mock_server)
 
-        mock_tool_passenger_traffic.register.assert_called_once_with(mock_server)
-        mock_tool_bus_kmb.register.assert_called_once_with(mock_server)
-        mock_tool_land_custom_wait_time.register.assert_called_once_with(mock_server)
+        mock_tool_passenger_traffic.register.assert_called_once_with(mock_mcp)
+        mock_tool_bus_kmb.register.assert_called_once_with(mock_mcp)
+        mock_tool_land_custom_wait_time.register.assert_called_once_with(mock_mcp)
 
 
 if __name__ == "__main__":

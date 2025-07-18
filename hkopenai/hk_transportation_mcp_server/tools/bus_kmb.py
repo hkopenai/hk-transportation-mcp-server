@@ -13,6 +13,7 @@ from hkopenai_common.json_utils import fetch_json_data
 
 def register(mcp):
     """Registers the get_bus_kmb tool with the MCP server."""
+
     @mcp.tool(
         description="All bus routes of Kowloon Motor Bus (KMB) and Long Win Bus Services Hong Kong. Data source: Kowloon Motor Bus and Long Win Bus Services"
     )
@@ -28,15 +29,19 @@ def register(mcp):
         return _get_bus_kmb(lang)
 
 
-def fetch_bus_routes(lang: str = "en") -> Union[List[Dict], Dict]:
-    """Fetch all KMB/LWB bus routes from the API
 
-    Args:
-        lang: Language code (en/tc/sc) for responses
 
-    Returns:
-        List of route dictionaries with route details or a dictionary with error information
-    """
+
+def _get_bus_kmb(
+    lang: Annotated[
+        Optional[str],
+        Field(
+            description="Language (en/tc/sc) English, Traditional Chinese, Simplified Chinese. Default English",
+            json_schema_extra={"enum": ["en", "tc", "sc"]},
+        ),
+    ] = "en",
+) -> Dict:
+    """Get all bus routes of Kowloon Motor Bus (KMB) and Long Win Bus Services Hong Kong"""
     url = "https://data.etabus.gov.hk/v1/transport/kmb/route/"
     data = fetch_json_data(url)
 
@@ -61,20 +66,4 @@ def fetch_bus_routes(lang: str = "en") -> Union[List[Dict], Dict]:
             }
         )
 
-    return filtered_routes
-
-
-def _get_bus_kmb(
-    lang: Annotated[
-        Optional[str],
-        Field(
-            description="Language (en/tc/sc) English, Traditional Chinese, Simplified Chinese. Default English",
-            json_schema_extra={"enum": ["en", "tc", "sc"]},
-        ),
-    ] = "en",
-) -> Dict:
-    """Get all bus routes of Kowloon Motor Bus (KMB) and Long Win Bus Services Hong Kong"""
-    result = fetch_bus_routes(lang if lang else "en")
-    if isinstance(result, dict) and result.get("type") == "Error":
-        return result
-    return {"type": "RouteList", "data": result}
+    return {"type": "RouteList", "data": filtered_routes}

@@ -1,14 +1,16 @@
 """Tests for the Land Boundary Control Points Waiting Time tool."""
+
 import unittest
 from unittest.mock import patch, MagicMock
-from hkopenai.hk_transportation_mcp_server.tool_land_custom_wait_time import (
-    _fetch_wait_times,
+from hkopenai.hk_transportation_mcp_server.tools.land_custom_wait_time import (
+    _get_land_boundary_wait_times,
     register,
 )
 
 
 class TestLandCustomWaitTimeTool(unittest.TestCase):
     """Tests for the land boundary control points waiting time tool."""
+
     def test_fetch_wait_times_en_language(self):
         """Test fetching wait times with English language."""
         with patch("requests.get") as mock_get:
@@ -89,7 +91,7 @@ class TestLandCustomWaitTimeTool(unittest.TestCase):
             mock_response = MagicMock()
             mock_response.json.return_value = {"HYW": {"arrQueue": 0, "depQueue": 0}}
             mock_get.return_value = mock_response
-            _ = mock_get # Added to satisfy pylint W0612
+            _ = mock_get  # Added to satisfy pylint W0612
 
             result = _fetch_wait_times("xx")
 
@@ -124,12 +126,8 @@ class TestLandCustomWaitTimeTool(unittest.TestCase):
 
     def test_empty_data_response(self):
         """Test handling of empty data responses from the API."""
-        with patch("requests.get") as mock_get:
-            mock_response = MagicMock()
-            mock_response.json.return_value = {}
-            mock_get.return_value = mock_response
-
-            result = _fetch_wait_times("en")
+        with patch("hkopenai_common.json_utils.fetch_json_data", return_value={}):
+            result = _get_land_boundary_wait_times("en")
             self.assertEqual(result["type"], "WaitTimes")
             self.assertEqual(len(result["data"]["control_points"]), 8)
             hyw = next(
@@ -150,7 +148,7 @@ class TestLandCustomWaitTimeTool(unittest.TestCase):
         decorated_function = mock_decorator.call_args[0][0]
         self.assertEqual(decorated_function.__name__, "get_land_boundary_wait_times")
         with patch(
-            "hkopenai.hk_transportation_mcp_server.tool_land_custom_wait_time._fetch_wait_times"
+            "hkopenai.hk_transportation_mcp_server.tools.land_custom_wait_time._get_land_boundary_wait_times"
         ) as mock_fetch_wait_times:
             decorated_function(lang="en")
             mock_fetch_wait_times.assert_called_once_with("en")

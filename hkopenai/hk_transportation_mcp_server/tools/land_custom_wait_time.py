@@ -21,10 +21,10 @@ def register(mcp):
         ] = "en",
     ) -> Dict:
         """Get current waiting times at land boundary control points in Hong Kong."""
-        return _fetch_wait_times(str(lang))
+        return _get_land_boundary_wait_times(str(lang))
 
 
-def _fetch_wait_times(lang: str) -> Dict:
+def _get_land_boundary_wait_times(lang: str) -> Dict:
     """Fetch land boundary control points waiting times."""
     control_points = {
         "HYW": "Heung Yuen Wai",
@@ -77,3 +77,6 @@ def _fetch_wait_times(lang: str) -> Dict:
         "type": "WaitTimes",
         "data": {"language": lang.upper(), "control_points": wait_times},
     }
+
+
+
