@@ -7,7 +7,7 @@ name = "hkopenai.hk_transportation_mcp_server"
 version = "0.2.8"
 description = "Hong Kong transportation MCP Server providing transportation data tools"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.10"
 license = "MIT"
 classifiers = [ "Programming Language :: Python :: 3", "Operating System :: OS Independent",]
 dependencies = [ "fastmcp>=2.10.2", "requests>=2.31.0", "pytest>=8.2.0", "pytest-cov>=6.1.1", "modelcontextprotocol", "hkopenai_common>=0.3.0",]
