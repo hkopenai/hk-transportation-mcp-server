@@ -11,6 +11,7 @@ from .tools import (
     passenger_traffic,
     bus_kmb,
     land_custom_wait_time,
+    transport_snapshot,
 )
 
 
@@ -21,5 +22,6 @@ def server():
     passenger_traffic.register(mcp)
     bus_kmb.register(mcp)
     land_custom_wait_time.register(mcp)
+    transport_snapshot.register(mcp)
 
     return mcp

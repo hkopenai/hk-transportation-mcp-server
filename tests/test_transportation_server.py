@@ -19,9 +19,9 @@ class TestApp(unittest.TestCase):
     """
 
     @patch("hkopenai.hk_transportation_mcp_server.server.FastMCP")
-    @patch("hkopenai.hk_transportation_mcp_server.tools.passenger_traffic")
-    @patch("hkopenai.hk_transportation_mcp_server.tools.bus_kmb")
-    @patch("hkopenai.hk_transportation_mcp_server.tools.land_custom_wait_time")
+    @patch("hkopenai.hk_transportation_mcp_server.server.passenger_traffic")
+    @patch("hkopenai.hk_transportation_mcp_server.server.bus_kmb")
+    @patch("hkopenai.hk_transportation_mcp_server.server.land_custom_wait_time")
     def test_create_mcp_server(
         self,
         mock_tool_land_custom_wait_time,
@@ -48,7 +48,7 @@ class TestApp(unittest.TestCase):
         mock_fastmcp.return_value = mock_mcp
 
         # Test server creation
-        server("localhost", 8000, False)
+        server()
 
         # Verify server creation
         mock_fastmcp.assert_called_once()
